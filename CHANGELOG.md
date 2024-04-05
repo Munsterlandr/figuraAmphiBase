@@ -1,5 +1,5 @@
 # Info
-Avatar version: 1.2
+Avatar version: 1.2a
 
 Texture's accessory layers have basically the same UVs as the base layers, but shifted horizontally +64 pixels.
 
