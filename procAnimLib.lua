@@ -1,3 +1,5 @@
+
+-- addRot is depricated, the rework should make it unnecessary
 function addRot(part, rot)
   part:setRot(part:getRot() + rot)
 end
@@ -110,4 +112,77 @@ function animGroup:new(initFunc)
     setmetatable(o, {__index = animGroup})
     animSystem.new(o, initFunc, o.tick, o.render)
     return o
+end
+
+-- rework's stuff
+local function getPoseVal(pose, val, part)
+    
+end
+
+pose = {}
+function pose:new(strength)
+    local o = {}
+    o.rot = {}
+    o.pos = {}
+    o.scale = {}
+    o.pivot = {}
+    o.camera = {}
+    o.strength = strength
+    setmetatable(o, {__index = self})
+    return o
+end
+function pose:getRot(part)
+    if self.rot[part] == nil then
+        return vec(0,0,0)
+    else
+        return self.rot[part]*self.strength
+    end
+end
+function pose:setRot(part, val)
+    self.rot[part] = val
+end
+function pose:getPos(part)
+    if self.pos[part] == nil then
+        return vec(0,0,0)
+    else
+        return self.pos[part]*self.strength
+    end
+end
+function pose:setPos(part, val)
+    self.pos[part] = val
+end
+function pose:getScale(part)
+    if self.scale[part] == nil then
+        return vec(1,1,1)
+    else
+        return self.scale[part]*self.strength
+    end
+end
+function pose:setScale(part, val)
+    self.scale[part] = val
+end
+function pose:getPivot(part)
+    if self.pivot[part] == nil then
+        return vec(0,0,0)
+    else
+        return self.pivot[part]*self.strength
+    end
+end
+function pose:setPivot(part, val)
+    self.pivot[part] = val
+end
+
+poseGroup = {}
+setmetatable(poseGroup, {__index = pose})
+function poseGroup:new(strength)
+    local o = pose:new(strength)
+    o.children = {}
+    setmetatable(o, {__index = poseGroup})
+end
+function poseGroup:getRot(part)
+    local rot = vec(0,0,0)
+    if self.rot[part] ~= nil then
+        rot = self.rot[part]
+    end
+
 end

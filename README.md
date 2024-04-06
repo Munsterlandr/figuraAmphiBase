@@ -9,6 +9,7 @@ If things are separated into multiple versions, it's probably because of changes
 Current model version: 1.1
 
 ### Version 1.2
+* Completely rework the animation system to be more data based, which will also make the transformation sequence easier
 * Make code more readable and easier to edit (particularly for the transformation handler so that retracting added parts is straightforward)
 * Add ducking animation to match with camera perspective adjusting to prevent seeing through walls
 * Antennae sprites (may be pushed to 2.0 if I can't make room for em)
