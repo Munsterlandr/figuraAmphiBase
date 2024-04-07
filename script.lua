@@ -13,8 +13,8 @@ end
 
 tfHandler = animSystem:new(
   function (self) -- init
-    self.amphinity = smoothVal:new(1,0.15)
-    self.goopening = smoothVal:new(0,0.3)
+    self.amphinity = SmoothVal:new(1,0.15)
+    self.goopening = SmoothVal:new(0,0.3)
   end, function (self) -- tick
     if self.isTransforming then
       if self.goopening.new > 0.99 then
@@ -236,9 +236,9 @@ end
 
 standingUpHandler = animSystem:new(
   function (self) -- init
-    self.standUp = smoothVal:new(0,0.2)
-    self.moveTail = smoothVal:new(0,0.2)
-    self.cameraPivot = smoothVal:new(vec(0,-0.5,0), 0.3)
+    self.standUp = SmoothVal:new(0,0.2)
+    self.moveTail = SmoothVal:new(0,0.2)
+    self.cameraPivot = SmoothVal:new(vec(0,-0.5,0), 0.3)
   end, function (self) -- tick
     if not isStanding() then
       self.standUp.target = 0
@@ -457,9 +457,9 @@ earHandler = animSystem:new(
       }
     }
 
-    self.earSpeedAdjust = smoothVal:new(vec(0,0,0),0.2)
-    self.leftEarRot = smoothVal:new(vec(0,0,0),0.1)
-    self.rightEarRot = smoothVal:new(vec(0,0,0),0.1)
+    self.earSpeedAdjust = SmoothVal:new(vec(0,0,0),0.2)
+    self.leftEarRot = SmoothVal:new(vec(0,0,0),0.1)
+    self.rightEarRot = SmoothVal:new(vec(0,0,0),0.1)
   end, function (self) -- tick
     local currentState = "walk"
     if player:getPose() == "SLEEPING" then

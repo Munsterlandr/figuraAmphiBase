@@ -1,0 +1,36 @@
+
+pose planning:
+suffixes: none means it's got no code directly messing with it, !<animSystem> means it has an animator, # means comment. multiple animators can affect the same pose, and commas separate these.
+
+poses
+    form!tfHandler
+        player
+        amphi
+            ears!earHandler
+            wag!wagger
+            pose!poseHandler
+                restPose
+                normal
+                    look!looker
+                    posture!stander
+                        biped
+                            crouch!crouchHandler
+                        polyped
+                            crouch!crouchHandler
+                            ducking!duckHandler
+    goop!tfHandler,goopSync
+        hide
+        show
+
+
+
+animator order:
+note: animators only run if at least one of the poses they effect has a strength above zero, when checked at root. Ones where the order could be whatever are grouped with commas.
+
+tfHandler
+poseHandler,wagger
+earHandler,stander,crouchHandler
+duckHandler
+looker
+goopSync
+

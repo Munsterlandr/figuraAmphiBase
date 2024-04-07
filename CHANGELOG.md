@@ -5,7 +5,7 @@ Texture's accessory layers have basically the same UVs as the base layers, but s
 
 ## Changes
 * refactored code _again_
-* begun work on completely new, data driven 
+* begun work on completely new animation system _again_
 * moved transformation handler to the front of the script so it's easier to edit
 
 ## Known issues
