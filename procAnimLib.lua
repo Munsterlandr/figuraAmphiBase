@@ -1,12 +1,26 @@
+-- QoLs
+QoL = {}
+function QoL.getTableSize(table)
+    local size = 0
+    for _,value in pairs(table) do
+        if value ~= nil then
+            size = size + 1
+        end
+    end
+    return size
+end
+
+
+
 -- smoothVal Handling
 SmoothVal = {}
-function SmoothVal:render(delta)
+function SmoothVal:getAt(delta)
     return math.lerp(self.old, self.new, delta)
 end
-function SmoothVal:tick()
+function SmoothVal:advance()
     self.old = self.new
     self.new = math.lerp(self.new, self.target, self.lerp)
-end function SmoothVal:setVal(val)
+end function SmoothVal:set(val)
     self.old = val
     self.new = val
     self.target = val
@@ -37,7 +51,7 @@ end function Oscillator:tick()
     self.target = math.cos(self.currentProgression)*self.deviation.new
     self.deviation:tick()
     self.advanceBy:tick()
-    SmoothVal.tick(self)
+    SmoothVal.advance(self)
 end
 
 
@@ -175,6 +189,15 @@ end function PoseGroup:getStrengthOfDescendant(descendant)
 end function PoseGroup:addChild(child, name)
     self.children[name] = child
     child.parent = self
+end function PoseGroup:setChildStrength(childName, strength)
+    local nonTargetChildrenCount = QoL.getTableSize(self.children) - 1
+    for name,child in pairs(self.children) do
+        if name == childName then
+            child.strength = strength
+        else
+            child.strength = (1 - strength) / nonTargetChildrenCount
+        end
+    end
 end
 
 Poses = PoseGroup:new(1)

@@ -41,16 +41,16 @@ tfHandler = animSystem:new(
         end
       end
 
-      self.goopening:tick()
-      self.amphinity:tick()
+      self.goopening:advance()
+      self.amphinity:advance()
 
       --[[print(self.goopening.new)
       print(self.amphinity.new)--]]
     end
   end, function (self, delta, context) -- render
-    local humanity = 1-self.amphinity:render(delta)
-    local amphinity = self.amphinity:render(delta)
-    local goopiness = 0.6 + 0.4*self.goopening:render(delta)
+    local humanity = 1-self.amphinity:getAt(delta)
+    local amphinity = self.amphinity:getAt(delta)
+    local goopiness = 0.6 + 0.4*self.goopening:getAt(delta)
 
     local crouchVal = 0
     if player:isCrouching() then
@@ -252,21 +252,21 @@ standingUpHandler = animSystem:new(
       end
     end
 
-    self.cameraPivot:tick()
-    self.standUp:tick()
-    self.moveTail:tick()
+    self.cameraPivot:advance()
+    self.standUp:advance()
+    self.moveTail:advance()
   end, function (self, delta, context) -- render
     models.amphi.root.Pivot:setPos(0,-12,-13)
-    models.amphi.root.Pivot:setRot(vec(75,0,0)*self.standUp:render(delta) + vec(-20,0,0)*self.moveTail:render(delta))
-    models.amphi.root.Pivot.Hips:setRot(vec(-10,0,0)*self.standUp:render(delta))
-    models.amphi.root.Pivot.Hips.Legs:setRot(vec(-55,0,0)*self.standUp:render(delta))
-    models.amphi.root.Pivot.Hips.TailBase:setRot(vec(-25,0,0)*self.moveTail:render(delta))
-    models.amphi.root.Pivot.Hips.TailBase.TailTip:setRot(vec(-25,0,0)*self.moveTail:render(delta))
-    models.amphi.root.Pivot.Hips.Waist:setRot(vec(10,0,0)*self.standUp:render(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders:setRot(vec(0,0,0)*self.standUp:render(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms:setRot(vec(-55,0,0)*self.standUp:render(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck:setRot(vec(-10,0,0)*self.standUp:render(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head:setRot(vec(-45,0,0)*self.standUp:render(delta))
+    models.amphi.root.Pivot:setRot(vec(75,0,0)*self.standUp:getAt(delta) + vec(-20,0,0)*self.moveTail:getAt(delta))
+    models.amphi.root.Pivot.Hips:setRot(vec(-10,0,0)*self.standUp:getAt(delta))
+    models.amphi.root.Pivot.Hips.Legs:setRot(vec(-55,0,0)*self.standUp:getAt(delta))
+    models.amphi.root.Pivot.Hips.TailBase:setRot(vec(-25,0,0)*self.moveTail:getAt(delta))
+    models.amphi.root.Pivot.Hips.TailBase.TailTip:setRot(vec(-25,0,0)*self.moveTail:getAt(delta))
+    models.amphi.root.Pivot.Hips.Waist:setRot(vec(10,0,0)*self.standUp:getAt(delta))
+    models.amphi.root.Pivot.Hips.Waist.Shoulders:setRot(vec(0,0,0)*self.standUp:getAt(delta))
+    models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms:setRot(vec(-55,0,0)*self.standUp:getAt(delta))
+    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck:setRot(vec(-10,0,0)*self.standUp:getAt(delta))
+    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head:setRot(vec(-45,0,0)*self.standUp:getAt(delta))
 
     if currentPose == "SLEEPING" then
       --null the other ones
@@ -337,7 +337,7 @@ standingUpHandler = animSystem:new(
       end
 
       if self.cameraPivot.target.y > rayDist.y then
-        self.cameraPivot:setVal(rayDist)
+        self.cameraPivot:set(rayDist)
       else
         self.cameraPivot.target = rayDist
       end
@@ -351,7 +351,7 @@ standingUpHandler = animSystem:new(
 
 
 
-    local camVec = self.cameraPivot:render(delta)
+    local camVec = self.cameraPivot:getAt(delta)
     renderer:setOffsetCameraPivot(camVec)
     renderer:setEyeOffset(camVec)
   end
@@ -377,11 +377,11 @@ wagger = animSystem:new(
   function (self) -- init
     self.tailYaw = Oscillator:new(2,0.1,120,0.2)
   end, function (self) -- tick
-    self.tailYaw:tick()
+    self.tailYaw:advance()
   end, function (self, delta, context) -- render
 
-    addRot(models.amphi.root.Pivot.Hips.TailBase, matrices.rotation4(vec(-20,0,0)*standingUpHandler.standUp:render(delta)):apply(vec(0,self.tailYaw:render(delta), 0)))
-    addRot(models.amphi.root.Pivot.Hips.TailBase.TailTip, matrices.rotation4(vec(5,0,0)*standingUpHandler.standUp:render(delta)):apply(vec(0,self.tailYaw:render(delta),0)))
+    addRot(models.amphi.root.Pivot.Hips.TailBase, matrices.rotation4(vec(-20,0,0)*standingUpHandler.standUp:getAt(delta)):apply(vec(0,self.tailYaw:getAt(delta), 0)))
+    addRot(models.amphi.root.Pivot.Hips.TailBase.TailTip, matrices.rotation4(vec(5,0,0)*standingUpHandler.standUp:getAt(delta)):apply(vec(0,self.tailYaw:getAt(delta),0)))
   end
 )
 
@@ -408,7 +408,7 @@ lookHandler = animState:new(
     self.neckAngle = math.lerp(self.neckAngle, self.targetNeckAngle, 0.3)
   end,
   function (self, delta, context) -- render
-    local rotMatrix = matrices.rotation4(vec(-75,0,0)*standingUpHandler.standUp:render(delta))
+    local rotMatrix = matrices.rotation4(vec(-75,0,0)*standingUpHandler.standUp:getAt(delta))
 
     local headRotation = vanilla_model.HEAD:getOriginRot()
     headRotation.y = (headRotation.y + 180)%360 - 180
@@ -483,12 +483,12 @@ earHandler = animSystem:new(
     end
     self.earSpeedAdjust.target = (speed)*maxAdjust
 
-    self.earSpeedAdjust:tick()
-    self.leftEarRot:tick()
-    self.rightEarRot:tick()
+    self.earSpeedAdjust:advance()
+    self.leftEarRot:advance()
+    self.rightEarRot:advance()
   end, function (self, delta, context) -- render
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head.LeftEar:setRot(self.leftEarRot:render(delta) + self.earSpeedAdjust:render(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head.RightEar:setRot(self.rightEarRot:render(delta) + self.earSpeedAdjust:render(delta))
+    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head.LeftEar:setRot(self.leftEarRot:getAt(delta) + self.earSpeedAdjust:getAt(delta))
+    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head.RightEar:setRot(self.rightEarRot:getAt(delta) + self.earSpeedAdjust:getAt(delta))
   end
 )
 
@@ -556,10 +556,10 @@ sneakHandler = animSystem:new(
   end, function (self, delta, context) -- render
     if player:isCrouching() then
      -- models.amphi.root:setPos(models.amphi.root:getPos() + vec(0,-3.2,0))
-      models.amphi.root.Pivot.Hips.Legs:setPos(0,-2*standingUpHandler.standUp:render(delta),-4)
-      addRot(models.amphi.root.Pivot.Hips.Waist, vec(-15,0,0)*standingUpHandler.standUp:render(delta))
-      addRot(models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head, vec(15,0,0)*standingUpHandler.standUp:render(delta))
-      models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms:setPos(0,3.2 -2*standingUpHandler.standUp:render(delta),-4*standingUpHandler.standUp:render(delta))
+      models.amphi.root.Pivot.Hips.Legs:setPos(0,-2*standingUpHandler.standUp:getAt(delta),-4)
+      addRot(models.amphi.root.Pivot.Hips.Waist, vec(-15,0,0)*standingUpHandler.standUp:getAt(delta))
+      addRot(models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head, vec(15,0,0)*standingUpHandler.standUp:getAt(delta))
+      models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms:setPos(0,3.2 -2*standingUpHandler.standUp:getAt(delta),-4*standingUpHandler.standUp:getAt(delta))
     else
       models.amphi.root.Pivot.Hips.Legs:setPos(0,0,0)
       models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms:setPos(0,0,0)
