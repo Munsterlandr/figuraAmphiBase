@@ -2,6 +2,19 @@ require "procAnimLib"
 
 
 
+-- Model Pose Tree --
+Poses:addChild("goop", PoseGroup:new(1))
+Poses:addChild("form", PoseGroup:new(1))
+Poses.form:addChild("human", PoseGroup:new(0))
+Poses.form:addChild("amphi", PoseGroup:new(1))
+Poses.form.amphi:setPos(models, vec(0,-12,-13))
+Poses.form.amphi:setPos(models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms.LeftArm, vec(2,0,0))
+Poses.form.amphi:setPos(models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms.RightArm, vec(-2,0,0))
+Poses.form.amphi:setRot(models.amphi.root.Pivot.Hips.LeggingsPivot, vec(-90,0,0))
+Poses.form.amphi:setRot(models.amphi.root.Pivot.Hips.Waist.Shoulders.ChestplatePivot, vec(-90,0,0))
+
+
+
 -- transformation system --
 function pings.transform()
   tfHandler.isTransforming = true
@@ -666,6 +679,7 @@ function events.render(delta, context, matrix)
   --print(renderer:getCameraNormal())
   --print(matrix)
 
+  
 
   local pose = player:getPose()
   if pose ~= currentPose then
@@ -682,5 +696,10 @@ function events.render(delta, context, matrix)
   earHandler:render(delta, context)
   wagger:render(delta, context)
   sneakHandler:render(delta, context)
-  tfHandler:render(delta, context)
+  tfHandler:render(delta, context) --]]
+
+  Poses:apply()
+  --print(models:getPos())
+  --print(Poses.form.amphi:getPos(models))
+  --print(Poses.form.amphi.pos[models])
 end

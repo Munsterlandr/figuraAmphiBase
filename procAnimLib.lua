@@ -8,6 +8,8 @@ function QoL.getTableSize(table)
         end
     end
     return size
+end function QoL.getGlobalRotation(currentRot, targetRot)
+    return matrices.rotation4(currentRot):apply(targetRot)
 end
 
 
@@ -129,21 +131,21 @@ end function PoseGroup:getRot(part)
 
     return rot*self.strength
 end function PoseGroup:getPos(part)
-    local pos = vec(0,0,0)
-    if self.rot[part] ~= nil then
-        pos = self.pos[part]
+    local position = vec(0,0,0)
+    if self.pos[part] ~= nil then
+        position = self.pos[part]
     end
 
     if self.children ~= {} then
         for _, child in pairs(self.children) do
-            pos = pos + child:getPos(part)
+            position = position + child:getPos(part)
         end
     end
 
-    return pos*self.strength
+    return position * self.strength
 end function PoseGroup:getScale(part)
     local scale = vec(1,1,1)
-    if self.rot[part] ~= nil then
+    if self.scale[part] ~= nil then
         scale = self.scale[part]
     end
 
@@ -153,10 +155,10 @@ end function PoseGroup:getScale(part)
         end
     end
 
-    return scale*self.strength
+    return scale*self.strength + vec(1,1,1)*(1-self.strength)
 end function PoseGroup:getPivot(part)
     local pivot = vec(0,0,0)
-    if self.rot[part] ~= nil then
+    if self.pivot[part] ~= nil then
         pivot = self.pivot[part]
     end
 
@@ -186,7 +188,7 @@ end function PoseGroup:getStrengthOfDescendant(descendant)
         strength = strength * pose.strength
     until(pose == self)
     return strength
-end function PoseGroup:addChild(child, name)
+end function PoseGroup:addChild(name, child)
     self.children[name] = child
     child.parent = self
 end function PoseGroup:setChildStrength(childName, strength)
