@@ -3,24 +3,26 @@ pose planning:
 suffixes: none means it's got no code directly messing with it, !<animSystem> means it has an animator, # means comment. multiple animators can affect the same pose, and commas separate these.
 
 poses
-    form!tfHandler
+    goop!goopSync,tfHandler
+        hide
+    form
         player
+            crouchAdjust!playerCroucher
+            look!playerLooker
         amphi
-            ears!earHandler
             wag!wagger
             pose!poseHandler
                 restPose
                 normal
+                    ears!earHandler
                     look!looker
                     posture!stander
                         biped
                             crouch!crouchHandler
+                            ducking!duckHandler
+                            shiftTail
                         polyped
                             crouch!crouchHandler
-                            ducking!duckHandler
-    goop!tfHandler,goopSync
-        hide
-        show
 
 
 
@@ -29,8 +31,8 @@ note: animators only run if at least one of the poses they effect has a strength
 
 tfHandler
 poseHandler,wagger
-earHandler,stander,crouchHandler
+earHandler,stander,crouchHandler,playerCroucher
 duckHandler
-looker
+looker,playerLooker
 goopSync
 

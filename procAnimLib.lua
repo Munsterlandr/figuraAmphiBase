@@ -14,7 +14,7 @@ end
 
 
 
--- smoothVal Handling
+-- SmoothVal Handling
 SmoothVal = {}
 function SmoothVal:getAt(delta)
     return math.lerp(self.old, self.new, delta)
@@ -66,58 +66,14 @@ function Pose:new(strength)
     o.pos = {}
     o.scale = {}
     o.pivot = {}
+    o.visibility = {}
     o.camera = vec(0,0,0)
     o.strength = strength
-    setmetatable(o, {__index = self})
-    return o
-end function Pose:getRot(part)
-    if self.rot[part] == nil then
-        return vec(0,0,0)
-    else
-        return self.rot[part]*self.strength
-    end
-end function Pose:setRot(part, val)
-    self.rot[part] = val
-end
-function Pose:getPos(part)
-    if self.pos[part] == nil then
-        return vec(0,0,0)
-    else
-        return self.pos[part]*self.strength
-    end
-end function Pose:setPos(part, val)
-    self.pos[part] = val
-end function Pose:getScale(part)
-    if self.scale[part] == nil then
-        return vec(1,1,1)
-    else
-        return self.scale[part]*self.strength
-    end
-end function Pose:setScale(part, val)
-    self.scale[part] = val
-end function Pose:getPivot(part)
-    if self.pivot[part] == nil then
-        return vec(0,0,0)
-    else
-        return self.pivot[part]*self.strength
-    end
-end function Pose:setPivot(part, val)
-    self.pivot[part] = val
-end function Pose:getCamera()
-    return self.camera*self.strength
-end function Pose:setCamera(val)
-    self.camera = val
-end
-
-PoseGroup = {}
-setmetatable(PoseGroup, {__index = Pose})
-function PoseGroup:new(strength)
-    local o = Pose:new(strength)
     o.children = {}
-    setmetatable(o.children, {__index = PoseGroup})
+    setmetatable(o.children, {__index = Pose})
     setmetatable(o, {__index = o.children}) -- makes getting to children easy
     return o
-end function PoseGroup:getRot(part)
+end function Pose:getRot(part)
     local rot = vec(0,0,0)
     if self.rot[part] ~= nil then
         rot = self.rot[part]
@@ -130,7 +86,9 @@ end function PoseGroup:getRot(part)
     end
 
     return rot*self.strength
-end function PoseGroup:getPos(part)
+end function Pose:setRot(part, val)
+self.rot[part] = val
+end function Pose:getPos(part)
     local position = vec(0,0,0)
     if self.pos[part] ~= nil then
         position = self.pos[part]
@@ -143,7 +101,9 @@ end function PoseGroup:getPos(part)
     end
 
     return position * self.strength
-end function PoseGroup:getScale(part)
+end function Pose:setPos(part, val)
+    self.pos[part] = val
+end function Pose:getScale(part)
     local scale = vec(1,1,1)
     if self.scale[part] ~= nil then
         scale = self.scale[part]
@@ -156,7 +116,9 @@ end function PoseGroup:getScale(part)
     end
 
     return scale*self.strength + vec(1,1,1)*(1-self.strength)
-end function PoseGroup:getPivot(part)
+end function Pose:setScale(part, val)
+    self.scale[part] = val
+end function Pose:getPivot(part)
     local pivot = vec(0,0,0)
     if self.pivot[part] ~= nil then
         pivot = self.pivot[part]
@@ -169,7 +131,9 @@ end function PoseGroup:getPivot(part)
     end
 
     return pivot*self.strength
-end function PoseGroup:getCamera()
+end function Pose:setPivot(part, val)
+    self.pivot[part] = val
+end function Pose:getCamera()
     local camera = self.camera
 
     if self.children ~= {} then
@@ -179,7 +143,9 @@ end function PoseGroup:getCamera()
     end
 
     return camera*self.strength
-end function PoseGroup:getStrengthOfDescendant(descendant)
+end function Pose:setCamera(val)
+    self.camera = val
+end function Pose:getStrengthOfDescendant(descendant)
     local strength = descendant.strength
 
     local pose = descendant
@@ -188,10 +154,10 @@ end function PoseGroup:getStrengthOfDescendant(descendant)
         strength = strength * pose.strength
     until(pose == self)
     return strength
-end function PoseGroup:addChild(name, child)
+end function Pose:addChild(name, child)
     self.children[name] = child
     child.parent = self
-end function PoseGroup:setChildStrength(childName, strength)
+end function Pose:setChildStrength(childName, strength)
     local nonTargetChildrenCount = QoL.getTableSize(self.children) - 1
     for name,child in pairs(self.children) do
         if name == childName then
@@ -202,7 +168,7 @@ end function PoseGroup:setChildStrength(childName, strength)
     end
 end
 
-Poses = PoseGroup:new(1)
+Poses = Pose:new(1)
 local function applyPosesTo(modelPart)
     modelPart:setRot(Poses:getRot(modelPart))
     modelPart:setPos(Poses:getPos(modelPart))
@@ -232,15 +198,16 @@ function Animators:new(name, init, tick, render, poses)
     local o = {}
     init(o)
     o.tick = tick
-    o.render = render
+    o.renderFunc = render
     o.poses = poses
+    setmetatable(o, {__index = Animators})
     self.list[name] = o
 end function Animators:tick()
     for _,animator in pairs(self.list) do
-        local isActive = true
-        for _,pose in ipairs(animator) do
-            if Poses:getStrengthOfDescendant(pose) == 0 then
-                isActive = false
+        local isActive = false
+        for _,pose in ipairs(animator.poses) do
+            if Poses:getStrengthOfDescendant(pose) ~= 0 then
+                isActive = true
             end
         end
         if isActive then
@@ -248,24 +215,24 @@ end function Animators:tick()
         end
     end
 end function Animators:render(delta)
-    for _,animator in pairs(self.list) do
-        local isActive = true
-        for _,pose in ipairs(animator) do
-            if Poses:getStrengthOfDescendant(pose) == 0 then
-                isActive = false
-            end
+    local isActive = false
+    for _,pose in ipairs(self.poses) do
+        if Poses:getStrengthOfDescendant(pose) ~= 0 then
+            isActive = true
         end
-        if isActive then
-            animator:render(delta)
-        end
+    end
+    if isActive then
+        self:renderFunc(delta)
     end
 end
 
 --[[blueprint for animator:
-Animators:new(name,
-    function (self)
-    end, function (self, delta)
-    end, {})
+Animators:new("", -- name
+  function (self) -- init
+  end, function (self) -- tick
+  end, function (self, delta) -- render
+  end, {} -- poses
+)
 ]]
 
 
