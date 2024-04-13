@@ -8,8 +8,8 @@ function QoL.getTableSize(table)
         end
     end
     return size
-end function QoL.getGlobalRotation(currentRot, targetRot)
-    return matrices.rotation4(currentRot):apply(targetRot)
+end function QoL.getGlobalRotation(currentRot, addedRot)
+    return matrices.rotation4(-currentRot):apply(addedRot)
 end
 
 
@@ -32,7 +32,7 @@ end function SmoothVal:new(target, lerp)
     o.new = target
     o.target = target
     o.lerp = lerp
-    setmetatable(o, {__index = self})
+    setmetatable(o, {__index = SmoothVal})
     return o
 end
 
@@ -66,10 +66,10 @@ function Pose:new(strength)
     o.pos = {}
     o.scale = {}
     o.pivot = {}
-    o.visibility = {}
     o.camera = vec(0,0,0)
     o.strength = strength
     o.children = {}
+    o.childOrder = {}
     setmetatable(o.children, {__index = Pose})
     setmetatable(o, {__index = o.children}) -- makes getting to children easy
     return o
@@ -149,13 +149,17 @@ end function Pose:getStrengthOfDescendant(descendant)
     local strength = descendant.strength
 
     local pose = descendant
-    repeat
-        pose = pose.parent
-        strength = strength * pose.strength
-    until(pose == self)
+    if pose ~= self then
+        repeat
+            pose = pose.parent
+            --print(strength)
+            strength = strength * pose.strength
+        until(pose == self)
+    end
     return strength
 end function Pose:addChild(name, child)
     self.children[name] = child
+    self.childOrder[#self.childOrder+1] = name
     child.parent = self
 end function Pose:setChildStrength(childName, strength)
     local nonTargetChildrenCount = QoL.getTableSize(self.children) - 1
@@ -181,58 +185,92 @@ local function applyPosesTo(modelPart)
             applyPosesTo(kid)
         end
     end
-end function Poses.apply()
+end
+
+
+-- animator stuff
+function Pose:setAnimator(animator)
+    self.animator = animator
+end function Pose:tick()
+    self.animator.tick(self)
+end function Pose:render(delta)
+    self.animator.render(self,delta)
+end
+DoDebug = true
+local animators = {}
+local function tickPose(pose)
+    -- run children first so deepest in are updated asap
+    local kidsList = pose.childOrder
+    if kidsList ~= {} then
+        for _, name in ipairs(kidsList) do
+            if DoDebug then print(name) end
+            tickPose(pose.children[name])
+        end
+    end
+
+    -- tick pose if it's got the strength
+    if Poses:getStrengthOfDescendant(pose) ~= 0 and pose.animator ~= nil then
+        pose:tick()
+    end
+end function Poses:tick()
+    tickPose(Poses)
+
+    for _, animator in ipairs(animators) do
+        animator.hasTicked = false
+    end
+end
+local function renderPose(pose, delta)
+    -- run children first so deepest in are updated first
+    local kidsList = pose.childOrder
+    if kidsList ~= {} then
+        for _, name in ipairs(kidsList) do
+            --print(name)
+            renderPose(pose.children[name], delta)
+        end
+    end
+
+    -- render pose if it's got the strength
+    if Poses:getStrengthOfDescendant(pose) ~= 0 and pose.animator ~= nil then
+        pose:render(delta)
+    end
+end function Poses:render(delta)
     local camVec = Poses:getCamera()
     renderer:setOffsetCameraPivot(camVec)
     renderer:setEyeOffset(camVec)
 
     applyPosesTo(models)
+
+    renderPose(Poses, delta)
 end
 
 
 
--- animators
-Animators = {list = {}}
-setmetatable(Animators, {__index = Animators.list})
-function Animators:new(name, init, tick, render, poses)
+Animator = {}
+function Animator:new(init, tick, render)
     local o = {}
     init(o)
-    o.tick = tick
-    o.renderFunc = render
-    o.poses = poses
-    setmetatable(o, {__index = Animators})
-    self.list[name] = o
-end function Animators:tick()
-    for _,animator in pairs(self.list) do
-        local isActive = false
-        for _,pose in ipairs(animator.poses) do
-            if Poses:getStrengthOfDescendant(pose) ~= 0 then
-                isActive = true
-            end
-        end
-        if isActive then
-            animator:tick()
-        end
+    o.tickFunc = tick
+    o.render = render
+    o.hasTicked = false
+    setmetatable(o, {__index = Animator})
+    if animators == {} then
+        animators[1] = o
+    else
+        animators[#animators+1] = o
     end
-end function Animators:render(delta)
-    local isActive = false
-    for _,pose in ipairs(self.poses) do
-        if Poses:getStrengthOfDescendant(pose) ~= 0 then
-            isActive = true
-        end
-    end
-    if isActive then
-        self:renderFunc(delta)
+    return o
+end function Animator:tick()
+    if not self.animator.hasTicked then
+        self.animator.tickFunc(self)
+        self.animator.hasTicked = true
     end
 end
 
---[[blueprint for animator:
-Animators:new("", -- name
-  function (self) -- init
-  end, function (self) -- tick
-  end, function (self, delta) -- render
-  end, {} -- poses
-)
+--[[template:
+Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta) -- render
+end)
 ]]
 
 

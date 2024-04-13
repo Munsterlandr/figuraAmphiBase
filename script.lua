@@ -3,104 +3,112 @@ require "procAnimLib"
 
 
 -- pose tree --
-Poses:addChild("goop", Pose:new(0))
-Poses.goop:addChild("hide", Pose:new(1))
 Poses:addChild("form", Pose:new(1))
 Poses.form:addChild("player", Pose:new(0))
 Poses.form.player:addChild("crouch", Pose:new(0))
 Poses.form:addChild("amphi", Pose:new(1))
-Poses.form.amphi:addChild("wag", Pose:new(1))
 Poses.form.amphi:addChild("pose", Pose:new(1))
-Poses.form.amphi.pose:addChild("sleep", Pose:new(1))
 Poses.form.amphi.pose:addChild("normal", Pose:new(1))
-Poses.form.amphi.pose.normal:addChild("ears", Pose:new(1))
-Poses.form.amphi.pose.normal:addChild("look", Pose:new(1))
 Poses.form.amphi.pose.normal:addChild("posture", Pose:new(1))
 Poses.form.amphi.pose.normal.posture:addChild("biped", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.biped:addChild("crouch", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.biped:addChild("ducking", Pose:new(1))
+Poses.form.amphi.pose.normal.posture.biped:addChild("crouched", Pose:new(0))
+Poses.form.amphi.pose.normal.posture.biped.crouched:addChild("yes", Pose:new(0))
+Poses.form.amphi.pose.normal.posture.biped.crouched.yes:addChild("run", Pose:new(0))
+Poses.form.amphi.pose.normal.posture.biped.crouched:addChild("no", Pose:new(1))
+Poses.form.amphi.pose.normal.posture.biped.crouched.no:addChild("run", Pose:new(0))
 Poses.form.amphi.pose.normal.posture.biped:addChild("moveTail", Pose:new(1))
+Poses.form.amphi.pose.normal.posture.biped:addChild("ducking", Pose:new(1))
 Poses.form.amphi.pose.normal.posture:addChild("polyped", Pose:new(1))
-Poses.form.amphi.pose.normal.posture.polyped:addChild("crouch", Pose:new(0))
+Poses.form.amphi.pose.normal.posture.polyped:addChild("crouched", Pose:new(0))
+Poses.form.amphi.pose.normal.posture.polyped.crouched:addChild("yes", Pose:new(0))
+Poses.form.amphi.pose.normal.posture.polyped.crouched.yes:addChild("run", Pose:new(0))
+Poses.form.amphi.pose.normal.posture.polyped.crouched:addChild("no", Pose:new(1))
+Poses.form.amphi.pose.normal.posture.polyped.crouched.no:addChild("run", Pose:new(0))
+Poses.form.amphi.pose.normal:addChild("ears", Pose:new(1))
+Poses.form.amphi.pose.normal:addChild("look", Pose:new(1))
+Poses.form.amphi.pose:addChild("sleep", Pose:new(1))
+Poses.form.amphi:addChild("wag", Pose:new(1))
+Poses:addChild("goop", Pose:new(0))
+Poses.goop:addChild("hidden", Pose:new(1))
 
 
 
 -- goop sync --
-Poses.goop.hide:setScale(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2.Goop, vec(0.6,0.6,0.6))
-Poses.goop.hide:setScale(models.amphi.root.Goops.Hips2.Legs2.RightLeg2.Goop, vec(0.6,0.6,0.6))
-Poses.goop.hide:setScale(models.amphi.root.Goops.Hips2.Waist2.Goop, vec(0.6,0.6,0))
-Poses.goop.hide:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2.Goop, vec(0.6,0.6,0.6))
-Poses.goop.hide:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2.Goop, vec(0.6,0.6,0.6))
-Poses.goop.hide:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2.Goop, vec(0.6,0.6,0.6))
-Animators:new("goop",
-  function (self)
-  end, function (self)
-  end, function (self, delta)
-    -- copy rotation
-    Poses.goop:setRot(models.amphi.root.Goops, Poses.form:getRot(models.amphi.root.Amphi))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2, Poses.form:getRot(models.amphi.root.Amphi.Hips))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Legs2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Legs))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Legs.LeftLeg))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Legs2.RightLeg2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Legs.RightLeg))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Waist2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
-    Poses.goop:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
+Poses.goop.hidden:setScale(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2.Goop, vec(0.6,0.6,0.6))
+Poses.goop.hidden:setScale(models.amphi.root.Goops.Hips2.Legs2.RightLeg2.Goop, vec(0.6,0.6,0.6))
+Poses.goop.hidden:setScale(models.amphi.root.Goops.Hips2.Waist2.Goop, vec(0.6,0.6,0))
+Poses.goop.hidden:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2.Goop, vec(0.6,0.6,0.6))
+Poses.goop.hidden:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2.Goop, vec(0.6,0.6,0.6))
+Poses.goop.hidden:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2.Goop, vec(0.6,0.6,0.6))
 
-    -- copy position
-    Poses.goop:setPos(models.amphi.root.Goops, Poses.form:getPos(models.amphi.root.Amphi))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2, Poses.form:getPos(models.amphi.root.Amphi.Hips))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Legs2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Legs))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Legs.LeftLeg))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Legs2.RightLeg2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Legs.RightLeg))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Waist2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
-    Poses.goop:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
-
-    -- copy scale
-    Poses.goop:setScale(models.amphi.root.Goops, Poses.form:getScale(models.amphi.root.Amphi))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2, Poses.form:getScale(models.amphi.root.Amphi.Hips))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Legs2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Legs))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Legs.LeftLeg))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Legs2.RightLeg2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Legs.RightLeg))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Waist2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
-    Poses.goop:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
-
-    -- copy pivots
-    Poses.goop:setPivot(models.amphi.root.Goops, Poses.form:getPivot(models.amphi.root.Amphi))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2, Poses.form:getPivot(models.amphi.root.Amphi.Hips))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Legs2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Legs))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Legs.LeftLeg))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Legs2.RightLeg2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Legs.RightLeg))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Waist2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
-    Poses.goop:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
-
-  end, {Poses.goop}
-)
-function Animators.goop:hide()
+function Poses.goop.hide()
   models.amphi.root.Goops:setVisible(false)
   Poses.goop.strength = 0
-end function Animators.goop:show()
+end function Poses.goop.show()
   models.amphi.root.Goops:setVisible(true)
   Poses.goop.strength = 1
 end
+
+Poses.goop:setAnimator(Animator:new(function (self)
+  end, function (self)
+  end, function (self, delta)
+    -- copy rotation
+    self:setRot(models.amphi.root.Goops, Poses.form:getRot(models.amphi.root.Amphi))
+    self:setRot(models.amphi.root.Goops.Hips2, Poses.form:getRot(models.amphi.root.Amphi.Hips))
+    self:setRot(models.amphi.root.Goops.Hips2.Legs2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Legs))
+    self:setRot(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Legs.LeftLeg))
+    self:setRot(models.amphi.root.Goops.Hips2.Legs2.RightLeg2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Legs.RightLeg))
+    self:setRot(models.amphi.root.Goops.Hips2.Waist2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist))
+    self:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders))
+    self:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms))
+    self:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm))
+    self:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm))
+    self:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
+    self:setRot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
+
+    -- copy position
+    self:setPos(models.amphi.root.Goops, Poses.form:getPos(models.amphi.root.Amphi))
+    self:setPos(models.amphi.root.Goops.Hips2, Poses.form:getPos(models.amphi.root.Amphi.Hips))
+    self:setPos(models.amphi.root.Goops.Hips2.Legs2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Legs))
+    self:setPos(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Legs.LeftLeg))
+    self:setPos(models.amphi.root.Goops.Hips2.Legs2.RightLeg2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Legs.RightLeg))
+    self:setPos(models.amphi.root.Goops.Hips2.Waist2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist))
+    self:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders))
+    self:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms))
+    self:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm))
+    self:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm))
+    self:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
+    self:setPos(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
+
+    -- copy scale
+    self:setScale(models.amphi.root.Goops, Poses.form:getScale(models.amphi.root.Amphi))
+    self:setScale(models.amphi.root.Goops.Hips2, Poses.form:getScale(models.amphi.root.Amphi.Hips))
+    self:setScale(models.amphi.root.Goops.Hips2.Legs2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Legs))
+    self:setScale(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Legs.LeftLeg))
+    self:setScale(models.amphi.root.Goops.Hips2.Legs2.RightLeg2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Legs.RightLeg))
+    self:setScale(models.amphi.root.Goops.Hips2.Waist2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist))
+    self:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders))
+    self:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms))
+    self:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm))
+    self:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm))
+    self:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
+    self:setScale(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getScale(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
+
+    -- copy pivots
+    self:setPivot(models.amphi.root.Goops, Poses.form:getPivot(models.amphi.root.Amphi))
+    self:setPivot(models.amphi.root.Goops.Hips2, Poses.form:getPivot(models.amphi.root.Amphi.Hips))
+    self:setPivot(models.amphi.root.Goops.Hips2.Legs2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Legs))
+    self:setPivot(models.amphi.root.Goops.Hips2.Legs2.LeftLeg2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Legs.LeftLeg))
+    self:setPivot(models.amphi.root.Goops.Hips2.Legs2.RightLeg2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Legs.RightLeg))
+    self:setPivot(models.amphi.root.Goops.Hips2.Waist2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist))
+    self:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders))
+    self:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms))
+    self:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm))
+    self:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm))
+    self:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
+    self:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
+  end
+))
 
 
 
@@ -149,17 +157,19 @@ Poses.form.player.crouch:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arm
 Poses.form.player.crouch:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, vec(28.64788,0,0))
 
 function pings.transform()
-  Animators.tf.isTransforming = true
-  Animators.goop:show()
-  Animators.tf.amphinity.target = 0
-  Animators.tf.goopening.target = 1
+  Poses.form.animator.isTransforming = true
+  Poses.goop:show()
+  Poses.form.animator.amphinity.target = 0
+  Poses.form.animator.goopening.target = 1
   action_wheel:setPage(ActionPages.blocker)
 end
 
-Animators:new("tf",
-  function (self)
-    self.amphinity = SmoothVal:new(1,0.15)
-    self.goopening = SmoothVal:new(0,0.3)
+Poses.form.isAmphi = true -- switch when model is visible
+Poses.form.isTransforming = false
+Poses.form.amphinity = SmoothVal:new(1,0.15)
+Poses.form.goopening = SmoothVal:new(0,0.3)
+
+Poses.form:setAnimator( Animator:new(function (self)
   end, function (self)
     if self.isTransforming then
       if self.goopening.new > 0.99 then
@@ -177,7 +187,7 @@ Animators:new("tf",
         end
       elseif self.goopening.new < 0.00001 and self.goopening.target == 0 then
         self.isTransforming = false
-        Animators.goop:hide()
+        Poses.goop:hide()
         if self.isAmphi then
           action_wheel:setPage(ActionPages.amphiMainPage)
           self.amphinity.new = 1
@@ -190,13 +200,11 @@ Animators:new("tf",
     self.amphinity:advance()
     self.goopening:advance()
   end, function (self, delta)
-    Poses.goop.hide.strength = 1 - self.goopening:getAt(delta)
+    Poses.goop.hidden.strength = 1 - self.goopening:getAt(delta)
     Poses.form.player.strength = 1 - self.amphinity:getAt(delta)
     Poses.form.amphi.strength = self.amphinity:getAt(delta)
-  end, {Poses.form}
-)
-Animators.tf.isAmphi = true -- switch when model is visible
-Animators.tf.isTransforming = false
+  end
+))
 
 
 
@@ -227,8 +235,9 @@ local function addBoundsFromBlockWithAdjustment(boundsList, block)
   end
 end
 
-Animators:new("ducking", -- name
-  function (self) -- init
+Poses.form.amphi.pose.normal.posture.biped.ducking.cameraPivot = SmoothVal:new(vec(0,-0.5,0), 0.3)
+
+Poses.form.amphi.pose.normal.posture.biped.ducking:setAnimator( Animator:new(function (self) -- init
   end, function (self) -- tick
     self.cameraPivot:advance()
   end, function (self, delta) -- render
@@ -300,39 +309,34 @@ Animators:new("ducking", -- name
       self.cameraPivot.target = rayDist
     end
 
-    Poses.form.amphi.pose.normal.posture.biped.ducking:setCamera(self.cameraPivot:getAt(delta))
-  end, {Poses.form.amphi.pose.normal.posture.biped.ducking} -- poses
-)
+    self:setCamera(self.cameraPivot:getAt(delta))
+  end
+))
 
 
 
 -- standing up system --
-Poses.form.amphi.pose.normal.posture.biped:setPos(models.amphi.root.Amphi)
+-- polyped posture
+Poses.form.amphi.pose.normal.posture.polyped:setCamera(vec(0,-0.5,0))
 
-Animators:new("stander",
-  function (self)
-    self.standUp = SmoothVal:new(0,0.2)
-    self.moveTail = SmoothVal:new(0,0.2)
-    self.cameraPivot = SmoothVal:new(vec(0,-0.5,0), 0.3)
-  end, function (self)
-    if not Animators.stander.isStanding() then
-      self.standUp.target = 0
-      self.moveTail.target = 0
-    else
-      self.standUp.target = 1
-      if currentPose == "SWIMMING" or currentPose == "FALL_FLYING" then
-        self.moveTail.target = 0
-      else
-        self.moveTail.target = 1
-      end
-    end
+-- biped posture
+Poses.form.amphi.pose.normal.posture.biped:setRot(models.amphi.root.Amphi, vec(75,0,0))
+Poses.form.amphi.pose.normal.posture.biped:setRot(models.amphi.root.Amphi.Hips, vec(-10,0,0))
+Poses.form.amphi.pose.normal.posture.biped:setRot(models.amphi.root.Amphi.Hips.Legs, vec(-45,0,0))
+Poses.form.amphi.pose.normal.posture.biped:setRot(models.amphi.root.Amphi.Hips.Waist, vec(10,0,0))
+Poses.form.amphi.pose.normal.posture.biped:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders, vec(0,0,0)) -- placeholder for anim tweaks
+Poses.form.amphi.pose.normal.posture.biped:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, vec(-55,0,0))
+Poses.form.amphi.pose.normal.posture.biped:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, vec(-10,0,0))
+Poses.form.amphi.pose.normal.posture.biped:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, vec(-45,0,0))
 
-    self.standUp:advance()
-    self.moveTail:advance()
-  end, function (self, delta)
-  end, {Poses.form.amphi.pose.normal.posture}
-)
-function Animators.stander.isStanding()
+Poses.form.amphi.pose.normal.posture.biped.moveTail:setRot(models.amphi.root.Amphi, vec(0,0,0))
+Poses.form.amphi.pose.normal.posture.biped.moveTail:setRot(models.amphi.root.Amphi.Hips, vec(-20,0,0))
+Poses.form.amphi.pose.normal.posture.biped.moveTail:setRot(models.amphi.root.Amphi.Hips.TailBase, vec(-25,0,0))
+Poses.form.amphi.pose.normal.posture.biped.moveTail:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, vec(-25,0,0))
+
+Poses.form.amphi.pose.normal.posture.shouldStand = false
+
+function Poses.form.amphi.pose.normal.posture.isStanding()
   local mainUseAction = player:getHeldItem():getUseAction()
   local sideUseAction = player:getHeldItem(true):getUseAction()
   --[[print(mainUseAction)
@@ -346,152 +350,51 @@ function Animators.stander.isStanding()
     itemNeedsBiped = true
   end
 
-  if currentPose == "SLEEPING" then
-    return false
-  elseif currentPose == "SWIMMING" or currentPose == "FALL_FLYING" or player:isClimbing() or itemNeedsBiped or player:isFishing() or player:getControlledVehicle() ~= nil then
+  local currentPose = player:getPose()
+  if currentPose == "SWIMMING" or currentPose == "FALL_FLYING" or player:isClimbing() or itemNeedsBiped or player:isFishing() or player:getControlledVehicle() ~= nil then
     return true
   else
-    return Animators.stander.shouldStand
+    return Poses.form.amphi.pose.normal.posture.shouldStand
   end
 end
 
-Animators.stander.standingKeybind = keybinds:newKeybind("stand up", "key.keyboard.tab", true)
-
-Animators.stander.shouldStand = false
+Poses.form.amphi.pose.normal.posture.standingKeybind = keybinds:newKeybind("stand up", "key.keyboard.tab", true)
 
 function pings.standUp()
-  Animators.stander.shouldStand = true
+  Poses.form.amphi.pose.normal.posture.shouldStand = true
 end
 function pings.standDown()
-  Animators.stander.shouldStand = false
+  Poses.form.amphi.pose.normal.posture.shouldStand = false
 end
-Animators.stander.standingKeybind.press = pings.standUp
-Animators.stander.standingKeybind.release = pings.standDown
+Poses.form.amphi.pose.normal.posture.standingKeybind.press = pings.standUp
+Poses.form.amphi.pose.normal.posture.standingKeybind.release = pings.standDown
 
+Poses.form.amphi.pose.normal.posture.standingness = SmoothVal:new(0,0.2)
+Poses.form.amphi.pose.normal.posture.adjustTail = SmoothVal:new(0,0.2)
 
-
-standingUpHandler = animSystem:new(
-  function (self) -- init
-    self.standUp = SmoothVal:new(0,0.2)
-    self.moveTail = SmoothVal:new(0,0.2)
-    self.cameraPivot = SmoothVal:new(vec(0,-0.5,0), 0.3)
-  end, function (self) -- tick
-    if not isStanding() then
-      self.standUp.target = 0
-      self.moveTail.target = 0
+Poses.form.amphi.pose.normal.posture:setAnimator( Animator:new(function (self)
+  end, function (self)
+    if not self.isStanding() then
+      self.standingness.target = 0
+      self.adjustTail.target = 0
     else
-      self.standUp.target = 1
-      if currentPose == "SWIMMING" or currentPose == "FALL_FLYING" then
-        self.moveTail.target = 0
+      self.standingness.target = 1
+      if player:getPose() == "SWIMMING" or player:getPose() == "FALL_FLYING" then
+        self.adjustTail.target = 0
       else
-        self.moveTail.target = 1
+        self.adjustTail.target = 1
       end
     end
 
-    self.cameraPivot:advance()
-    self.standUp:advance()
-    self.moveTail:advance()
-  end, function (self, delta, context) -- render
-    models.amphi.root.Pivot:setPos(0,-12,-13)
-    models.amphi.root.Pivot:setRot(vec(75,0,0)*self.standUp:getAt(delta) + vec(-20,0,0)*self.moveTail:getAt(delta))
-    models.amphi.root.Pivot.Hips:setRot(vec(-10,0,0)*self.standUp:getAt(delta))
-    models.amphi.root.Pivot.Hips.Legs:setRot(vec(-55,0,0)*self.standUp:getAt(delta))
-    models.amphi.root.Pivot.Hips.TailBase:setRot(vec(-25,0,0)*self.moveTail:getAt(delta))
-    models.amphi.root.Pivot.Hips.TailBase.TailTip:setRot(vec(-25,0,0)*self.moveTail:getAt(delta))
-    models.amphi.root.Pivot.Hips.Waist:setRot(vec(10,0,0)*self.standUp:getAt(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders:setRot(vec(0,0,0)*self.standUp:getAt(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms:setRot(vec(-55,0,0)*self.standUp:getAt(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck:setRot(vec(-10,0,0)*self.standUp:getAt(delta))
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head:setRot(vec(-45,0,0)*self.standUp:getAt(delta))
-
-    if currentPose == "SLEEPING" then
-      --null the other ones
-    elseif not isStanding() then
-      self.cameraPivot.target = vec(0,-0.5,0)
-    elseif allowExtraCamHeight and currentPose ~= "SWIMMING" and currentPose ~= "FALL_FLYING" then
-      -- Fancier version of the camera height manager --
-      local minHeight = 1.8
-      local maxHeight = 2.2
-      if player:isCrouching() then
-        minHeight = 1.5
-        maxHeight = 1.9
-      end
-      local basePos = player:getPos()
-      local playerPosInt = basePos:floor() -- doing it this way should result in a tiny time save
-      local playerPosDec = basePos % 1
-
-      -- get all the AABB squares, adjusted to world coordinates and modified to account for player hitbox size
-      local bounds = {}
-      addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,1,0)))
-      addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,2,0)))
-      addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,3,0)))
-      if playerPosDec.x > 0.7 then
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,1,0)))
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,2,0)))
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,3,0)))
-        if playerPosDec.z > 0.7 then
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,1,1)))
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,2,1)))
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,3,1)))
-        elseif playerPosDec.z < 0.3 then
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,1,-1)))
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,2,-1)))
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(1,3,-1)))
-        end
-      elseif playerPosDec.x < 0.3 then
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,1,0)))
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,2,0)))
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,3,0)))
-        if playerPosDec.z > 0.7 then
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,1,1)))
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,2,1)))
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,3,1)))
-        elseif playerPosDec.z < 0.3 then
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,1,-1)))
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,2,-1)))
-          addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(-1,3,-1)))
-        end
-      end
-      if playerPosDec.z > 0.7 then
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,1,1)))
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,2,1)))
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,3,1)))
-      elseif playerPosDec.z < 0.3 then
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,1,-1)))
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,2,-1)))
-        addBoundsFromBlockWithAdjustment(bounds, world.getBlockState(playerPosInt + vec(0,3,-1)))
-      end
-
-      -- do the raycast
-      local _, hitAt --[[, hitSide]] = raycast:aabb(basePos, basePos+vec(0,maxHeight,0), bounds)
-      local rayDist = vec(0,0.4,0)
-      if hitAt ~= nil then
-        rayDist = hitAt - basePos - vec(0,minHeight,0)
-        if rayDist.y < -0.4 then
-          rayDist = vec(0,0.4,0)
-        end
-      end
-
-      if self.cameraPivot.target.y > rayDist.y then
-        self.cameraPivot:set(rayDist)
-      else
-        self.cameraPivot.target = rayDist
-      end
-
-      --[[print(hitAt)
-      print(rayDist)
-      print(hitSide)--]]
-    else
-      self.cameraPivot.target = vec(0,0,0)
-    end
-
-
-
-    local camVec = self.cameraPivot:getAt(delta)
-    renderer:setOffsetCameraPivot(camVec)
-    renderer:setEyeOffset(camVec)
+    self.standingness:advance()
+    self.adjustTail:advance()
+  end, function (self, delta)
+    local standingness = self.standingness:getAt(delta)
+    self.biped.strength = standingness
+    self.polyped.strength = 1 - standingness
+    self.biped.moveTail.strength = self.adjustTail:getAt(delta)
   end
-)
+))
 
 
 
@@ -523,13 +426,24 @@ wagger = animSystem:new(
 
 
 
--- looking system --
-Animators:new("look",
-  function (self)
-  end, function (self)
-  end, function (self, delta)
-  end, {}
-)
+-- looking system, need to fix the global Rotation func tho --
+Poses.form.amphi.pose.normal.look:setAnimator(Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta) -- render
+  local headRotation = vanilla_model.HEAD:getOriginRot()
+  headRotation.y = (headRotation.y + 180)%360 - 180
+
+  self:setRot(models.amphi.root.Amphi.Hips, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips), headRotation / -3))
+  self:setRot(models.amphi.root.Amphi.Hips.Legs, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Legs), vec(headRotation.x / 3, 0,0)))
+  self:setRot(models.amphi.root.Amphi.Hips.TailBase, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.TailBase), headRotation/-3 * vec(-1,1,1)))
+  self:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.TailBase.TailTip), headRotation/-3 * vec(-1,1,1)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist), headRotation / 3))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders), headRotation / 3))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms), vec(-headRotation.x /3, 0, 0)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck), headRotation / 3 + vec(30,0,0)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head), headRotation / 3) + vec(-30,0,0))
+  
+end))
 
 lookHandler = animState:new(
   function (self) -- init
@@ -574,43 +488,7 @@ lookHandler = animState:new(
 
 
 
--- ear position system --
-Animators:new("ears",
-  function (self)
-    self.earStates = {
-      walk = {
-        leftEarRot = vec(45,0,10),
-        rightEarRot = vec(45,0,-10),
-        delta = 0.1
-      },
-      run = {
-        leftEarRot = vec(60,0,10),
-        rightEarRot = vec(60,0,-10),
-        delta = 0.1
-      },
-      sleep = {
-        leftEarRot = vec(55,10,40),
-        rightEarRot = vec(55,-10,-40),
-        delta = 1
-      },
-      glide = {
-        leftEarRot = vec(0,0,10),
-        rightEarRot = vec(0,0,-10),
-        delta = 0.1
-      }
-    }
-
-    self.earSpeedAdjust = SmoothVal:new(vec(0,0,0),0.2)
-    self.leftEarRot = SmoothVal:new(vec(0,0,0),0.1)
-    self.rightEarRot = SmoothVal:new(vec(0,0,0),0.1)
-  end, function (self)
-    self.earSpeedAdjust:advance()
-    self.leftEarRot:advance()
-    self.rightEarRot:advance()
-  end, function (self, delta)
-  end, {Poses.form.amphi.ears}
-)
-
+-- ear position system, outdated --
 earHandler = animSystem:new(
   function (self) -- init
     self.earStates = {
@@ -729,6 +607,18 @@ sleepPose = animState:new(
 
 
 -- sneak handler --
+Croucher = Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta) -- render
+  if player:isCrouching() then
+    self.yes.strength = 1
+    self.no.strength = 0
+  else
+    self.yes.strength = 0
+    self.no.strength = 1
+  end
+end)
+
 sneakHandler = animSystem:new(
   function (self) -- init
   end, function (self) -- tick
@@ -745,6 +635,23 @@ sneakHandler = animSystem:new(
     end
   end
 )
+
+
+
+-- run pose setter --
+Runner = Animator:new(function (self) -- init
+  self.running = SmoothVal:new(0, 0.2)
+end, function (self) -- tick
+  if player:isSprinting() then
+    self.animator.running.target = 1
+  else
+    self.animator.running.target = 0
+  end
+
+  self.animator.running:advance()
+end, function (self, delta) -- render
+  self.strength = self.animator.running:getAt(delta)
+end)
 
 
 
@@ -827,7 +734,10 @@ end
 function events.tick()
   --code goes here
 
-  Animators:tick()
+  if DoDebug then print("Poses in order:") end
+  Poses:tick()
+
+  DoDebug = false
   --print(player:getRot())
 end
 
@@ -838,10 +748,6 @@ end
 
 function events.render(delta, context)
   -- render animators in order
-  Animators.tf:render(delta)
-  Animators.stander:render(delta)
-  Animators.ducking:render(delta)
-  Animators.goop:render(delta)
   
-  Poses:apply()
+  Poses:render(delta)
 end
