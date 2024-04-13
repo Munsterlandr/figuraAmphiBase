@@ -60,25 +60,39 @@ end
 
 -- pose system
 Pose = {}
-function Pose:new(strength)
+local function newPose(strength)
     local o = {}
-    o.rot = {}
-    o.pos = {}
-    o.scale = {}
-    o.pivot = {}
     o.camera = vec(0,0,0)
     o.camRot = vec(0,0,0)
     o.strength = strength
     o.children = {}
     o.childOrder = {}
+    -- may replace these with a new system
+    o.rot = {}
+    o.pos = {}
+    o.scale = {}
+    o.pivot = {}
+    -- said new system
+    o.parts = {}
     setmetatable(o.children, {__index = Pose})
     setmetatable(o, {__index = o.children}) -- makes getting to children easy
     return o
-end function Pose:getRot(part)
-    local rot = vec(0,0,0)
-    if self.rot[part] ~= nil then
-        rot = self.rot[part]
+end function Pose:addPart(part)
+    self.parts[part] = {
+        rot = vec(0,0,0),
+        pos = vec(0,0,0),
+        scale = vec(1,1,1),
+        pivot = vec(0,0,0)
+    }
+
+    if self.parent ~= nil and self.parent.parts[part] == nil then
+        self.parent:addPart(part)
     end
+end function Pose:getRot(part)
+    if self.parts[part] == nil then
+        self:addPart(part)
+    end
+    local rot = self.parts[part].rot
 
     if self.children ~= {} then
         for _, child in pairs(self.children) do
@@ -88,12 +102,16 @@ end function Pose:getRot(part)
 
     return rot*self.strength
 end function Pose:setRot(part, val)
-self.rot[part] = val
-end function Pose:getPos(part)
-    local position = vec(0,0,0)
-    if self.pos[part] ~= nil then
-        position = self.pos[part]
+    if self.parts[part] == nil then
+        self:addPart(part)
     end
+
+    self.parts[part].rot = val
+end function Pose:getPos(part)
+    if self.parts[part] == nil then
+        self:addPart(part)
+    end
+    local position = self.parts[part].pos
 
     if self.children ~= {} then
         for _, child in pairs(self.children) do
@@ -103,12 +121,16 @@ end function Pose:getPos(part)
 
     return position * self.strength
 end function Pose:setPos(part, val)
-    self.pos[part] = val
-end function Pose:getScale(part)
-    local scale = vec(1,1,1)
-    if self.scale[part] ~= nil then
-        scale = self.scale[part]
+    if self.parts[part] == nil then
+        self:addPart(part)
     end
+
+    self.parts[part].pos = val
+end function Pose:getScale(part)
+    if self.parts[part] == nil then
+        self:addPart(part)
+    end
+    local scale = self.parts[part].scale
 
     if self.children ~= {} then
         for _, child in pairs(self.children) do
@@ -118,12 +140,16 @@ end function Pose:getScale(part)
 
     return scale*self.strength + vec(1,1,1)*(1-self.strength)
 end function Pose:setScale(part, val)
-    self.scale[part] = val
-end function Pose:getPivot(part)
-    local pivot = vec(0,0,0)
-    if self.pivot[part] ~= nil then
-        pivot = self.pivot[part]
+    if self.parts[part] == nil then
+        self:addPart(part)
     end
+
+    self.parts[part].scale = val
+end function Pose:getPivot(part)
+    if self.parts[part] == nil then
+        self:addPart(part)
+    end
+    local pivot = self.parts[part].pivot
 
     if self.children ~= {} then
         for _, child in pairs(self.children) do
@@ -133,7 +159,11 @@ end function Pose:getPivot(part)
 
     return pivot*self.strength
 end function Pose:setPivot(part, val)
-    self.pivot[part] = val
+    if self.parts[part] == nil then
+        self:addPart(part)
+    end
+
+    self.parts[part].pivot = val
 end function Pose:getCamera()
     local camera = self.camera
 
@@ -170,7 +200,8 @@ end function Pose:getStrengthOfDescendant(descendant)
         until(pose == self)
     end
     return strength
-end function Pose:addChild(name, child)
+end function Pose:addChild(name, strength)
+    local child = newPose(strength)
     self.children[name] = child
     self.childOrder[#self.childOrder+1] = name
     child.parent = self
@@ -185,7 +216,17 @@ end function Pose:setChildStrength(childName, strength)
     end
 end
 
-Poses = Pose:new(1)
+
+
+-- animator stuff
+function Pose:setAnimator(animator)
+    self.animator = animator
+end function Pose:tick()
+    self.animator.tick(self)
+end function Pose:render(delta)
+    self.animator.render(self,delta)
+end
+Poses = newPose(1)
 local function applyPosesTo(modelPart)
     modelPart:setRot(Poses:getRot(modelPart))
     modelPart:setPos(Poses:getPos(modelPart))
@@ -198,16 +239,18 @@ local function applyPosesTo(modelPart)
             applyPosesTo(kid)
         end
     end
-end
+end function Poses:apply()
+    local camVec = Poses:getCamera()
+    renderer:setOffsetCameraPivot(camVec)
+    renderer:setEyeOffset(camVec)
+    renderer:setOffsetCameraRot(Poses:getCamRot())
 
-
--- animator stuff
-function Pose:setAnimator(animator)
-    self.animator = animator
-end function Pose:tick()
-    self.animator.tick(self)
-end function Pose:render(delta)
-    self.animator.render(self,delta)
+    for modelPart, _ in pairs(self.parts) do
+        modelPart:setRot(Poses:getRot(modelPart))
+        modelPart:setPos(Poses:getPos(modelPart))
+        modelPart:setScale(Poses:getScale(modelPart))
+        modelPart:setOffsetPivot(Poses:getPivot(modelPart))
+    end
 end
 local animators = {}
 local function tickPose(pose)
@@ -220,7 +263,7 @@ local function tickPose(pose)
     end
 
     -- tick pose if it's got the strength
-    if Poses:getStrengthOfDescendant(pose) ~= 0 and pose.animator ~= nil then
+    if pose.animator ~= nil then
         pose:tick()
     end
 end function Poses:tick()
@@ -241,29 +284,27 @@ local function renderPose(pose, delta)
     end
 
     -- render pose if it's got the strength
-    if Poses:getStrengthOfDescendant(pose) ~= 0 and pose.animator ~= nil then
+    if pose.animator ~= nil and (Poses:getStrengthOfDescendant(pose) ~= 0 or pose.animator.renderIfHidden) then
         pose:render(delta)
     end
 end function Poses:render(delta)
-    local camVec = Poses:getCamera()
-    renderer:setOffsetCameraPivot(camVec)
-    renderer:setEyeOffset(camVec)
-    renderer:setOffsetCameraRot(Poses:getCamRot())
-
-    applyPosesTo(models)
-
     renderPose(Poses, delta)
 end
 
 
 
 Animator = {}
-function Animator:new(init, tick, render)
+function Animator:new(init, tick, render, ignoreRenderOptimizer)
     local o = {}
     init(o)
     o.tickFunc = tick
     o.render = render
     o.hasTicked = false
+    if ignoreRenderOptimizer == nil then
+        o.renderIfHidden = false
+    else
+        o.renderIfHidden = ignoreRenderOptimizer
+    end
     setmetatable(o, {__index = Animator})
     if animators == {} then
         animators[1] = o

@@ -3,35 +3,31 @@ require "procAnimLib"
 
 
 -- pose tree --
-Poses:addChild("form", Pose:new(1))
-Poses.form:addChild("player", Pose:new(0))
-Poses.form.player:addChild("crouch", Pose:new(0))
-Poses.form.player:addChild("look", Pose:new(1))
-Poses.form:addChild("amphi", Pose:new(1))
-Poses.form.amphi:addChild("pose", Pose:new(1))
-Poses.form.amphi.pose:addChild("normal", Pose:new(1))
-Poses.form.amphi.pose.normal:addChild("posture", Pose:new(1))
-Poses.form.amphi.pose.normal.posture:addChild("biped", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.biped:addChild("crouched", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.biped.crouched:addChild("yes", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.biped.crouched.yes:addChild("run", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.biped.crouched:addChild("no", Pose:new(1))
-Poses.form.amphi.pose.normal.posture.biped.crouched.no:addChild("run", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.biped:addChild("moveTail", Pose:new(1))
-Poses.form.amphi.pose.normal.posture.biped:addChild("ducking", Pose:new(1))
-Poses.form.amphi.pose.normal.posture:addChild("polyped", Pose:new(1))
-Poses.form.amphi.pose.normal.posture.polyped:addChild("crouched", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.polyped.crouched:addChild("yes", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.polyped.crouched.yes:addChild("run", Pose:new(0))
-Poses.form.amphi.pose.normal.posture.polyped.crouched:addChild("no", Pose:new(1))
-Poses.form.amphi.pose.normal.posture.polyped.crouched.no:addChild("run", Pose:new(0))
-Poses.form.amphi.pose.normal:addChild("look", Pose:new(1))
-Poses.form.amphi.pose:addChild("sleep", Pose:new(0))
-Poses.form.amphi.pose.sleep:addChild("firstPerson", Pose:new(1))
-Poses.form.amphi:addChild("wag", Pose:new(1))
-Poses.form.amphi.pose:addChild("ears", Pose:new(1))
-Poses:addChild("goop", Pose:new(0))
-Poses.goop:addChild("hidden", Pose:new(1))
+Poses:addChild("form", 1)
+Poses.form:addChild("player", 0)
+Poses.form.player:addChild("crouch", 0)
+Poses.form.player:addChild("look", 1)
+Poses.form:addChild("amphi", 1)
+Poses.form.amphi:addChild("pose", 1)
+Poses.form.amphi.pose:addChild("normal", 1)
+Poses.form.amphi.pose.normal:addChild("posture", 1)
+Poses.form.amphi.pose.normal.posture:addChild("biped", 0)
+Poses.form.amphi.pose.normal.posture.biped:addChild("crouch", 0)
+Poses.form.amphi.pose.normal.posture.biped:addChild("run", 0)
+Poses.form.amphi.pose.normal.posture.biped:addChild("glide", 0)
+Poses.form.amphi.pose.normal.posture.biped:addChild("moveTail", 0)
+Poses.form.amphi.pose.normal.posture.biped:addChild("ducking", 1)
+Poses.form.amphi.pose.normal.posture:addChild("polyped", 0)
+Poses.form.amphi.pose.normal.posture.polyped:addChild("crouch", 0)
+Poses.form.amphi.pose.normal.posture.polyped:addChild("run", 0)
+Poses.form.amphi.pose.normal.posture:addChild("run", 0)
+Poses.form.amphi.pose.normal:addChild("look", 1)
+Poses.form.amphi.pose:addChild("sleep", 0)
+Poses.form.amphi.pose.sleep:addChild("firstPerson", 1)
+Poses.form.amphi:addChild("wag", 1)
+Poses.form.amphi.pose:addChild("ears", 1)
+Poses:addChild("goop", 0)
+Poses.goop:addChild("hidden", 1)
 
 
 
@@ -338,6 +334,9 @@ Poses.form.amphi.pose.normal.posture.biped.moveTail:setRot(models.amphi.root.Amp
 Poses.form.amphi.pose.normal.posture.biped.moveTail:setRot(models.amphi.root.Amphi.Hips.TailBase, vec(-25,0,0))
 Poses.form.amphi.pose.normal.posture.biped.moveTail:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, vec(-25,0,0))
 
+Poses.form.amphi.pose.normal.posture:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head.LeftEar, vec(45,0,10))
+Poses.form.amphi.pose.normal.posture:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head.RightEar, vec(45,0,-10))
+
 Poses.form.amphi.pose.normal.posture.shouldStand = false
 
 function Poses.form.amphi.pose.normal.posture.isStanding()
@@ -583,7 +582,8 @@ end))
 
 
 
--- sneak handler --
+-- pose setters --
+-- crouch pose setter
 Croucher = Animator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta) -- render
@@ -594,7 +594,7 @@ end, function (self, delta) -- render
     self.yes.strength = 0
     self.no.strength = 1
   end
-end)
+end, true)
 
 sneakHandler = animSystem:new(
   function (self) -- init
@@ -613,13 +613,11 @@ sneakHandler = animSystem:new(
   end
 )
 
-
-
--- run pose setter --
+-- run pose setter
 Runner = Animator:new(function (self) -- init
   self.running = SmoothVal:new(0, 0.2)
 end, function (self) -- tick
-  if player:isSprinting() then
+  if player:getPose() == "STANDING" and player:isSprinting() then
     self.animator.running.target = 1
   else
     self.animator.running.target = 0
@@ -628,7 +626,30 @@ end, function (self) -- tick
   self.animator.running:advance()
 end, function (self, delta) -- render
   self.strength = self.animator.running:getAt(delta)
-end)
+end, true)
+
+Poses.form.amphi.pose.normal.posture.polyped.run:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, vec(-20,0,0))
+Poses.form.amphi.pose.normal.posture.polyped.run:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, vec(20,0,0))
+Poses.form.amphi.pose.normal.posture.polyped.run:setAnimator(Runner)
+
+Poses.form.amphi.pose.normal.posture.run:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head.LeftEar, vec(15,0,0))
+Poses.form.amphi.pose.normal.posture.run:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head.RightEar, vec(15,0,0))
+Poses.form.amphi.pose.normal.posture.run:setAnimator(Runner)
+
+-- glide pose setter
+Glider = Animator:new(function (self) -- init
+  self.gliding = SmoothVal:new(0, 0.2)
+end, function (self) -- tick
+  if player:getPose() == "FALL_FLYING" then
+    self.animator.gliding.target = 1
+  else
+    self.animator.gliding.target = 0
+  end
+
+  self.animator.gliding:advance()
+end, function (self, delta) -- render
+  self.strength = self.animator.gliding:getAt(delta)
+end, true)
 
 
 
@@ -673,38 +694,11 @@ ActionPages.amphiMainPage:newAction()
 
 
 
--- pose stuff --
-currentPose = "STANDING"
-
-function setPose(pose)
-  currentPose = pose
-  if pose == "STANDING" or pose == "CROUCHING" then
-    setNewBaseAnim(lookHandler)
-  elseif pose == "SLEEPING" then
-    setNewBaseAnim(sleepPose)
-  end
-end
-
-
-
--- sloppy load bearing code, will rework --
-baseAnim = lookHandler
-function setNewBaseAnim(newAnim)
-  if newAnim ~= baseAnim then
-    baseAnim:stop()
-    baseAnim=newAnim
-    baseAnim:start()
-  end
-end
-
-
-
 -- core events --
 --entity init event, used for when the avatar entity is loaded for the first time
 function events.entity_init()
   models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head:setParentType("None")
   models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2:setParentType("None")
-  setPose("STANDING")
 end
 
 --tick event, called 20 times per second
@@ -722,6 +716,11 @@ end
 
 function events.render(delta, context)
   -- render animators in order
+  --print(context)
+  if context == "RENDER" or context == "FIRST_PERSON" then
+    Poses:render(delta)
+    Poses:apply()
+  end
+
   
-  Poses:render(delta)
 end

@@ -15,19 +15,15 @@ poses
                 normal
                     posture!
                         biped
-                            crouched!croucher
-                                yes
-                                    run!runner
-                                no
-                                    run!runner
+                            crouch!croucher
+                            run!runner
+                            glide!
                             ducking!
                             shiftTail
                         polyped
-                            crouched!croucher
-                                yes
-                                    run!runner
-                                no
-                                    run!runner
+                            crouch!croucher
+                            run!runner
+                        run!runner
                     look!
             wag!
             ears!
