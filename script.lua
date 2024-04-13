@@ -6,6 +6,7 @@ require "procAnimLib"
 Poses:addChild("form", Pose:new(1))
 Poses.form:addChild("player", Pose:new(0))
 Poses.form.player:addChild("crouch", Pose:new(0))
+Poses.form.player:addChild("look", Pose:new(1))
 Poses.form:addChild("amphi", Pose:new(1))
 Poses.form.amphi:addChild("pose", Pose:new(1))
 Poses.form.amphi.pose:addChild("normal", Pose:new(1))
@@ -24,10 +25,11 @@ Poses.form.amphi.pose.normal.posture.polyped.crouched:addChild("yes", Pose:new(0
 Poses.form.amphi.pose.normal.posture.polyped.crouched.yes:addChild("run", Pose:new(0))
 Poses.form.amphi.pose.normal.posture.polyped.crouched:addChild("no", Pose:new(1))
 Poses.form.amphi.pose.normal.posture.polyped.crouched.no:addChild("run", Pose:new(0))
-Poses.form.amphi.pose.normal:addChild("ears", Pose:new(1))
 Poses.form.amphi.pose.normal:addChild("look", Pose:new(1))
-Poses.form.amphi.pose:addChild("sleep", Pose:new(1))
+Poses.form.amphi.pose:addChild("sleep", Pose:new(0))
+Poses.form.amphi.pose.sleep:addChild("firstPerson", Pose:new(1))
 Poses.form.amphi:addChild("wag", Pose:new(1))
+Poses.form.amphi.pose:addChild("ears", Pose:new(1))
 Poses:addChild("goop", Pose:new(0))
 Poses.goop:addChild("hidden", Pose:new(1))
 
@@ -116,6 +118,8 @@ Poses.goop:setAnimator(Animator:new(function (self)
 Poses.form:setPos(models.amphi.root, vec(0,-12,-13))
 Poses.form:setRot(models.amphi.root.Amphi.Hips.LeggingsPivot, vec(-90,0,0))
 Poses.form:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.ChestplatePivot, vec(-90,0,0))
+Poses.form:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.LeftElytraPivot, vec(-90,0,0))
+Poses.form:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.RightElytraPivot, vec(-90,0,0))
 
 Poses.form.amphi:setPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm, vec(2,0,0))
 Poses.form.amphi:setPos(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm, vec(-2,0,0))
@@ -157,10 +161,10 @@ Poses.form.player.crouch:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arm
 Poses.form.player.crouch:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, vec(28.64788,0,0))
 
 function pings.transform()
-  Poses.form.animator.isTransforming = true
+  Poses.form.isTransforming = true
   Poses.goop:show()
-  Poses.form.animator.amphinity.target = 0
-  Poses.form.animator.goopening.target = 1
+  Poses.form.amphinity.target = 0
+  Poses.form.goopening.target = 1
   action_wheel:setPage(ActionPages.blocker)
 end
 
@@ -235,7 +239,7 @@ local function addBoundsFromBlockWithAdjustment(boundsList, block)
   end
 end
 
-Poses.form.amphi.pose.normal.posture.biped.ducking.cameraPivot = SmoothVal:new(vec(0,-0.5,0), 0.3)
+Poses.form.amphi.pose.normal.posture.biped.ducking.cameraPivot = SmoothVal:new(vec(0,0.4,0), 0.3)
 
 Poses.form.amphi.pose.normal.posture.biped.ducking:setAnimator( Animator:new(function (self) -- init
   end, function (self) -- tick
@@ -369,8 +373,8 @@ end
 Poses.form.amphi.pose.normal.posture.standingKeybind.press = pings.standUp
 Poses.form.amphi.pose.normal.posture.standingKeybind.release = pings.standDown
 
-Poses.form.amphi.pose.normal.posture.standingness = SmoothVal:new(0,0.2)
-Poses.form.amphi.pose.normal.posture.adjustTail = SmoothVal:new(0,0.2)
+Poses.form.amphi.pose.normal.posture.standingness = SmoothVal:new(0,0.15)
+Poses.form.amphi.pose.normal.posture.adjustTail = SmoothVal:new(0,0.15)
 
 Poses.form.amphi.pose.normal.posture:setAnimator( Animator:new(function (self)
   end, function (self)
@@ -399,92 +403,77 @@ Poses.form.amphi.pose.normal.posture:setAnimator( Animator:new(function (self)
 
 
 -- wag system --
-wagging = false
+Poses.form.amphi.wag.tailYaw = Oscillator:new(2,0.1,120,0.2)
+Poses.form.amphi.wag.wagging = false
+
 function pings.toggleWag()
-  if wagging then
-    wagger.tailYaw.advanceBy.target = math.pi / 60
-    wagger.tailYaw.deviation.target = 2
-    wagging = false
+  if Poses.form.amphi.wag.wagging then
+    Poses.form.amphi.wag.tailYaw.advanceBy.target = math.pi / 60
+    Poses.form.amphi.wag.tailYaw.deviation.target = 2
+    Poses.form.amphi.wag.wagging = false
   else
-    wagger.tailYaw.advanceBy.target = math.pi / 10
-    wagger.tailYaw.deviation.target = 50
-    wagging = true
+    Poses.form.amphi.wag.tailYaw.advanceBy.target = math.pi / 10
+    Poses.form.amphi.wag.tailYaw.deviation.target = 30
+    Poses.form.amphi.wag.wagging = true
   end
 end
 
-wagger = animSystem:new(
-  function (self) -- init
-    self.tailYaw = Oscillator:new(2,0.1,120,0.2)
-  end, function (self) -- tick
-    self.tailYaw:advance()
-  end, function (self, delta, context) -- render
+local function getCumulativeRotOfPose(part)
+  local rot = vec(0,0,0)
+  repeat
+    rot = rot + Poses.form.amphi.pose:getRot(part)
+    part = part:getParent()
+  until(part == nil)
+  return rot
+end
 
-    addRot(models.amphi.root.Pivot.Hips.TailBase, matrices.rotation4(vec(-20,0,0)*standingUpHandler.standUp:getAt(delta)):apply(vec(0,self.tailYaw:getAt(delta), 0)))
-    addRot(models.amphi.root.Pivot.Hips.TailBase.TailTip, matrices.rotation4(vec(5,0,0)*standingUpHandler.standUp:getAt(delta)):apply(vec(0,self.tailYaw:getAt(delta),0)))
-  end
-)
+Poses.form.amphi.wag:setAnimator(Animator:new(function (self) -- init
+end, function (self) -- tick
+  self.tailYaw:advance()
+end, function (self, delta) -- render
+  local tailWagVec = vec(0, self.tailYaw:getAt(delta), 0)
+  self:setRot(models.amphi.root.Amphi.Hips.TailBase, tailWagVec)
+  self:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, tailWagVec)
+end))
 
 
+-- looking system --
+local function getCumulativeRotOfPosture(part)
+  local rot = vec(0,0,0)
+  repeat
+    rot = rot + Poses.form.amphi.pose.normal.posture:getRot(part)
+    part = part:getParent()
+  until(part == nil)
+  return rot
+end
 
--- looking system, need to fix the global Rotation func tho --
 Poses.form.amphi.pose.normal.look:setAnimator(Animator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta) -- render
   local headRotation = vanilla_model.HEAD:getOriginRot()
   headRotation.y = (headRotation.y + 180)%360 - 180
 
-  self:setRot(models.amphi.root.Amphi.Hips, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips), headRotation / -3))
-  self:setRot(models.amphi.root.Amphi.Hips.Legs, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Legs), vec(headRotation.x / 3, 0,0)))
-  self:setRot(models.amphi.root.Amphi.Hips.TailBase, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.TailBase), headRotation/-3 * vec(-1,1,1)))
-  self:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.TailBase.TailTip), headRotation/-3 * vec(-1,1,1)))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist), headRotation / 3))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders), headRotation / 3))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms), vec(-headRotation.x /3, 0, 0)))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck), headRotation / 3 + vec(30,0,0)))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head), headRotation / 3) + vec(-30,0,0))
+  self:setRot(models.amphi.root.Amphi.Hips, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips), headRotation / -3))
+  self:setRot(models.amphi.root.Amphi.Hips.Legs, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Legs), vec(headRotation.x / 3, 0,0)))
+  self:setRot(models.amphi.root.Amphi.Hips.TailBase, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.TailBase), headRotation/-3 * vec(-1,1,1)))
+  self:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.TailBase.TailTip), headRotation/-3 * vec(-1,1,1)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist), headRotation / 3))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist.Shoulders), headRotation / 3))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms), vec(-headRotation.x /3, 0, 0)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck), headRotation / 3 + vec(30,0,0)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head), headRotation / 3 + vec(-30,0,0)))
   
 end))
 
-lookHandler = animState:new(
-  function (self) -- init
-    self.oldAdjust = 0
-    self.newAdjust = 0
+Poses.form.player.look:setAnimator(Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta) -- render
+  local headRot = vanilla_model.HEAD:getOriginRot()
+  headRot.z = -((headRot.y + 180)%360 - 180)
+  headRot.y = 0
 
-    self.neckAngle = 30
-    self.oldNeckAngle = 30
-    self.targetNeckAngle = 30
-  end, function (self) -- tick
-    self.oldNeckAngle = self.neckAngle
-
-    if player:isSprinting() then
-      self.targetNeckAngle = 10
-    else
-      self.targetNeckAngle = 30
-    end
-
-    self.neckAngle = math.lerp(self.neckAngle, self.targetNeckAngle, 0.3)
-  end,
-  function (self, delta, context) -- render
-    local rotMatrix = matrices.rotation4(vec(-75,0,0)*standingUpHandler.standUp:getAt(delta))
-
-    local headRotation = vanilla_model.HEAD:getOriginRot()
-    headRotation.y = (headRotation.y + 180)%360 - 180
-    addRot(models.amphi.root.Pivot.Hips.Waist.Shoulders, rotMatrix:apply(headRotation / 3))
-    addRot(models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck, rotMatrix:apply(headRotation / 3 + vec(math.lerp(self.oldNeckAngle, self.neckAngle, delta),0,0)))
-    addRot(models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head, rotMatrix:apply(headRotation / 3 + vec(-math.lerp(self.oldNeckAngle, self.neckAngle, delta),0,0)))
-
-    addRot(models.amphi.root.Pivot.Hips, rotMatrix:apply(headRotation / -3))
-    addRot(models.amphi.root.Pivot.Hips.Waist, rotMatrix:apply(headRotation / 3))
-    addRot(models.amphi.root.Pivot.Hips.TailBase, rotMatrix:apply(headRotation/-3 * vec(-1,1,1)))
-    addRot(models.amphi.root.Pivot.Hips.TailBase.TailTip, rotMatrix:apply(headRotation/-3 * vec(-1,1,1)))
-
-    -- adjust leg rotation
-    addRot(models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms, vec(-models.amphi.root.Pivot.Hips.Waist.Shoulders:getRot().x, 0, -models.amphi.root.Pivot.Hips.Waist.Shoulders:getRot().z))
-    addRot(models.amphi.root.Pivot.Hips.Legs, vec(-models.amphi.root.Pivot.Hips:getRot()[1], 0, -models.amphi.root.Pivot.Hips:getRot()[3]))
-  end, function (self) -- start
-
-  end
-)
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, headRot)
+end))
 
 
 
@@ -552,57 +541,45 @@ earHandler = animSystem:new(
 
 
 -- sleep pose --
-sleepPose = animState:new(
-  function (self) -- init
-  end, function (self) -- tick
-  end, function (self, delta, context) -- render
-    models.amphi.root.Pivot:setRot(-90,0,180)
-    models.amphi.root.Pivot:setPos(0,-20,-15)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck:setRot(-5,0,0)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck.Head:setRot(5,0,0)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders:setRot(10,0,0)
-    models.amphi.root.Pivot.Hips.Waist:setRot(-5,0,0)
-    models.amphi.root.Pivot.Hips:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.TailBase:setRot(15,0,0)
-    models.amphi.root.Pivot.Hips.TailBase.TailTip:setRot(-16,0,0)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms.LeftArm:setRot(10,0,-50)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms.RightArm:setRot(10,0,50)
-    models.amphi.root.Pivot.Hips.Legs.LeftLeg:setRot(-50,0,-20)
-    models.amphi.root.Pivot.Hips.Legs.RightLeg:setRot(-50,0,20)
-  end, function (self) -- start
-    renderer:setCameraPos(0, 0, 0)
-    if renderer:isFirstPerson() and tfHandler.isAmphi then
-      renderer:setOffsetCameraRot(0,180,0)
-      renderer:setEyeOffset(0.39,-0.2,0)
-      renderer:setOffsetCameraPivot(0.39,-0.2,0)
-    else
-      renderer:setEyeOffset(0,0,0)
-      renderer:setOffsetCameraPivot(0,0,0)
-    end
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi, vec(-90,0,180))
+Poses.form.amphi.pose.sleep:setPos(models.amphi.root.Amphi, vec(0, -8, -2))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.TailBase, vec(15,0,0))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, vec(-16,0,0))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Legs.LeftLeg, vec(-50,0,-20))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Legs.RightLeg, vec(-50,0,20))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist, vec(-5,0,0))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders, vec(10,0,0))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm, vec(10,0,-50))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm, vec(10,0,50))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, vec(-5,0,0))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, vec(5,0,0))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head.LeftEar, vec(55,10,40))
+Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head.RightEar, vec(55,-10,-40))
 
-    isActive = true
-  end, function (self) -- stop
-    renderer:setCameraPos(0,0,0)
-    renderer:setEyeOffset(0,0,0)
-    renderer:setOffsetCameraPivot(0,0,0)
-    renderer:setOffsetCameraRot(0,0,0)
-
-    models.amphi.root.Pivot:setRot(0,0,0)
-    models.amphi.root.Pivot:setPos(0,-12,-13)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Neck:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.Waist:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.TailBase:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.TailBase.TailTip:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms.LeftArm:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.Waist.Shoulders.Arms.RightArm:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.Legs.LeftLeg:setRot(0,0,0)
-    models.amphi.root.Pivot.Hips.Legs.RightLeg:setRot(0,0,0)
-
-    isActive = false
+Poses.form.amphi.pose:setAnimator(Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta) -- render
+  if player:getPose() == "SLEEPING" then
+    self.sleep.strength = 1
+    self.normal.strength = 0
+  else
+    self.sleep.strength = 0
+    self.normal.strength = 1
   end
-)
+end))
+
+Poses.form.amphi.pose.sleep.firstPerson:setCamera(vec(0.39,-0.2,0))
+Poses.form.amphi.pose.sleep.firstPerson:setCamRot(vec(0,180,0))
+
+Poses.form.amphi.pose.sleep.firstPerson:setAnimator(Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta) -- render
+  if renderer:isFirstPerson() then
+    self.strength = 1
+  else
+    self.strength = 0
+  end
+end))
 
 
 
@@ -734,10 +711,7 @@ end
 function events.tick()
   --code goes here
 
-  if DoDebug then print("Poses in order:") end
   Poses:tick()
-
-  DoDebug = false
   --print(player:getRot())
 end
 

@@ -11,6 +11,7 @@ poses
         amphi
             pose!
                 restPose
+                    isFirstPerson!
                 normal
                     posture!
                         biped
@@ -27,12 +28,16 @@ poses
                                     run!runner
                                 no
                                     run!runner
-                    ears!
                     look!
             wag!
+            ears!
     goop!
         hide
 
 Animator rework planning:
 instead of the old system where they're distinct from poses, this will have them be a component of poses.
 
+Ears system rework:
+Move a lot of the specific pose stuff to their respective poses, and instead only have the ears pose add some physics to them.
+
+The new physics system should work by calculating the angle towards the tip of the ear during the last tick, and readjust based on how big that angle is.

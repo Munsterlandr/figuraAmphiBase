@@ -48,11 +48,11 @@ function Oscillator:new(deviation, deviationSmoothing, ticksPerCycle, speedSmoot
     o.currentProgression = 0
     setmetatable(o, {__index = self})
     return o
-end function Oscillator:tick()
+end function Oscillator:advance()
     self.currentProgression = (self.currentProgression + self.advanceBy.new) % (2*math.pi)
     self.target = math.cos(self.currentProgression)*self.deviation.new
-    self.deviation:tick()
-    self.advanceBy:tick()
+    self.deviation:advance()
+    self.advanceBy:advance()
     SmoothVal.advance(self)
 end
 
@@ -67,6 +67,7 @@ function Pose:new(strength)
     o.scale = {}
     o.pivot = {}
     o.camera = vec(0,0,0)
+    o.camRot = vec(0,0,0)
     o.strength = strength
     o.children = {}
     o.childOrder = {}
@@ -145,6 +146,18 @@ end function Pose:getCamera()
     return camera*self.strength
 end function Pose:setCamera(val)
     self.camera = val
+end function Pose:getCamRot()
+    local camRot = self.camRot
+
+    if self.children ~= {} then
+        for _,child in pairs(self.children) do
+            camRot = camRot + child:getCamRot()
+        end
+    end
+
+    return camRot * self.strength
+end function Pose:setCamRot(val)
+    self.camRot = val
 end function Pose:getStrengthOfDescendant(descendant)
     local strength = descendant.strength
 
@@ -196,14 +209,12 @@ end function Pose:tick()
 end function Pose:render(delta)
     self.animator.render(self,delta)
 end
-DoDebug = true
 local animators = {}
 local function tickPose(pose)
     -- run children first so deepest in are updated asap
     local kidsList = pose.childOrder
     if kidsList ~= {} then
         for _, name in ipairs(kidsList) do
-            if DoDebug then print(name) end
             tickPose(pose.children[name])
         end
     end
@@ -237,6 +248,7 @@ end function Poses:render(delta)
     local camVec = Poses:getCamera()
     renderer:setOffsetCameraPivot(camVec)
     renderer:setEyeOffset(camVec)
+    renderer:setOffsetCameraRot(Poses:getCamRot())
 
     applyPosesTo(models)
 
