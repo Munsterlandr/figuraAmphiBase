@@ -437,30 +437,21 @@ end))
 
 
 -- looking system --
-local function getCumulativeRotOfPosture(part)
-  local rot = vec(0,0,0)
-  repeat
-    rot = rot + Poses.form.amphi.pose.normal.posture:getRot(part)
-    part = part:getParent()
-  until(part == nil)
-  return rot
-end
-
 Poses.form.amphi.pose.normal.look:setAnimator(Animator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta) -- render
   local headRotation = vanilla_model.HEAD:getOriginRot()
   headRotation.y = (headRotation.y + 180)%360 - 180
 
-  self:setRot(models.amphi.root.Amphi.Hips, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips), headRotation / -3))
-  self:setRot(models.amphi.root.Amphi.Hips.Legs, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Legs), vec(headRotation.x / 3, 0,0)))
-  self:setRot(models.amphi.root.Amphi.Hips.TailBase, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.TailBase), headRotation/-3 * vec(-1,1,1)))
-  self:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.TailBase.TailTip), headRotation/-3 * vec(-1,1,1)))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist), headRotation / 3))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist.Shoulders), headRotation / 3))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms), vec(-headRotation.x /3, 0, 0)))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck), headRotation / 3 + vec(30,0,0)))
-  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, QoL.getGlobalRotation(getCumulativeRotOfPosture(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head), headRotation / 3 + vec(-30,0,0)))
+  self:setRot(models.amphi.root.Amphi.Hips, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips), headRotation / -3))
+  self:setRot(models.amphi.root.Amphi.Hips.Legs, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.Legs), vec(headRotation.x / 3, 0,0)))
+  self:setRot(models.amphi.root.Amphi.Hips.TailBase, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.TailBase), headRotation/-3 * vec(-1,1,1)))
+  self:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.TailBase.TailTip), headRotation/-3 * vec(-1,1,1)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.Waist), headRotation / 3))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.Waist.Shoulders), headRotation / 3))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms), vec(-headRotation.x /3, 0, 0)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck), headRotation / 3 + vec(30,0,0)))
+  self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head), headRotation / 3 + vec(-30,0,0)))
   
 end))
 

@@ -1,4 +1,4 @@
--- QoLs
+-- QoLs --
 QoL = {}
 function QoL.getTableSize(table)
     local size = 0
@@ -58,7 +58,7 @@ end
 
 
 
--- pose system
+-- pose system --
 Pose = {}
 local function newPose(strength)
     local o = {}
@@ -67,12 +67,6 @@ local function newPose(strength)
     o.strength = strength
     o.children = {}
     o.childOrder = {}
-    -- may replace these with a new system
-    o.rot = {}
-    o.pos = {}
-    o.scale = {}
-    o.pivot = {}
-    -- said new system
     o.parts = {}
     setmetatable(o.children, {__index = Pose})
     setmetatable(o, {__index = o.children}) -- makes getting to children easy
@@ -188,7 +182,18 @@ end function Pose:getCamRot()
     return camRot * self.strength
 end function Pose:setCamRot(val)
     self.camRot = val
-end function Pose:getStrengthOfDescendant(descendant)
+end
+function Pose:getCumulativeRot(part)
+    local rot = vec(0,0,0)
+    repeat
+        rot = rot + self:getRot(part)
+        part = part:getParent()
+    until(part == nil)
+
+    rot = vec((rot.x - 180)%360 + 180, (rot.y - 180)%360 + 180, (rot.z - 180)%360 + 180)
+    return rot
+end
+function Pose:getStrengthOfDescendant(descendant)
     local strength = descendant.strength
 
     local pose = descendant
@@ -218,7 +223,7 @@ end
 
 
 
--- animator stuff
+-- animator stuff --
 function Pose:setAnimator(animator)
     self.animator = animator
 end function Pose:tick()
