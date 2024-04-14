@@ -1,7 +1,7 @@
 
 pose planning:
 The order registered does matter, as it determines the order of execution of animators.
-suffixes: none means it's got no code directly messing with it, !<animator> means it has an animator, # means comment. If the ! is not followed by anything, the animator is unique.
+suffixes: none means it's got no code directly messing with it, !<animator> means it has an animator, # means comment. If the ! is not followed by anything, it instead has a handler, which is a specialized version of an animator which is unique to a specific pose.
 
 poses
     form!
@@ -29,9 +29,6 @@ poses
             ears!
     goop!
         hide
-
-Animator rework planning:
-instead of the old system where they're distinct from poses, this will have them be a component of poses.
 
 Ears system rework:
 Move a lot of the specific pose stuff to their respective poses, and instead only have the ears pose add some physics to them.

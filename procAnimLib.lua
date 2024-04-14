@@ -10,6 +10,14 @@ function QoL.getTableSize(table)
     return size
 end function QoL.getGlobalRotation(currentRot, addedRot)
     return matrices.rotation4(-currentRot):apply(addedRot)
+end function QoL.listContainsVal(list, val)
+    local hasVal = false
+    for i = 1, #list, 1 do
+        if list[i] == val then
+            hasVal = true
+        end
+    end
+    return hasVal
 end
 
 
@@ -59,6 +67,8 @@ end
 
 
 -- pose system --
+local poseAtDepth = {}
+
 Pose = {}
 local function newPose(strength)
     local o = {}
@@ -66,7 +76,6 @@ local function newPose(strength)
     o.camRot = vec(0,0,0)
     o.strength = strength
     o.children = {}
-    o.childOrder = {}
     o.parts = {}
     setmetatable(o.children, {__index = Pose})
     setmetatable(o, {__index = o.children}) -- makes getting to children easy
@@ -205,11 +214,6 @@ function Pose:getStrengthOfDescendant(descendant)
         until(pose == self)
     end
     return strength
-end function Pose:addChild(name, strength)
-    local child = newPose(strength)
-    self.children[name] = child
-    self.childOrder[#self.childOrder+1] = name
-    child.parent = self
 end function Pose:setChildStrength(childName, strength)
     local nonTargetChildrenCount = QoL.getTableSize(self.children) - 1
     for name,child in pairs(self.children) do
@@ -219,6 +223,23 @@ end function Pose:setChildStrength(childName, strength)
             child.strength = (1 - strength) / nonTargetChildrenCount
         end
     end
+end function Pose:getDepth()
+    local depth = 0
+    local parent = self
+    repeat
+        depth = depth + 1
+        parent = parent.parent
+    until(parent == nil)
+    return depth
+end function Pose:addChild(name, strength)
+    local child = newPose(strength)
+    self.children[name] = child
+    child.parent = self
+    local childDepth = child:getDepth()
+    if poseAtDepth[childDepth] == nil then
+        poseAtDepth[childDepth] = {}
+    end
+    poseAtDepth[childDepth][#poseAtDepth[childDepth]+1] = child
 end
 
 
@@ -232,19 +253,8 @@ end function Pose:render(delta)
     self.animator.render(self,delta)
 end
 Poses = newPose(1)
-local function applyPosesTo(modelPart)
-    modelPart:setRot(Poses:getRot(modelPart))
-    modelPart:setPos(Poses:getPos(modelPart))
-    modelPart:setScale(Poses:getScale(modelPart))
-    modelPart:setOffsetPivot(Poses:getPivot(modelPart))
-
-    local modelKids = modelPart:getChildren()
-    if modelKids ~= {} then
-        for _,kid in pairs(modelKids) do
-            applyPosesTo(kid)
-        end
-    end
-end function Poses:apply()
+poseAtDepth[1] = {Poses}
+function Poses:apply()
     local camVec = Poses:getCamera()
     renderer:setOffsetCameraPivot(camVec)
     renderer:setEyeOffset(camVec)
@@ -257,71 +267,48 @@ end function Poses:apply()
         modelPart:setOffsetPivot(Poses:getPivot(modelPart))
     end
 end
+
 local animators = {}
-local function tickPose(pose)
-    -- run children first so deepest in are updated asap
-    local kidsList = pose.childOrder
-    if kidsList ~= {} then
-        for _, name in ipairs(kidsList) do
-            tickPose(pose.children[name])
+local tickSets = {}
+function Poses:tick()
+    for i = 1, #animators, 1 do
+        animators[i]:tick()
+    end
+    for i = 1, #tickSets, 1 do
+        for j = 1, #tickSets[i], 1 do
+            tickSets[i][j]:tick()
         end
     end
-
-    -- tick pose if it's got the strength
-    if pose.animator ~= nil then
-        pose:tick()
-    end
-end function Poses:tick()
-    tickPose(Poses)
-
-    for _, animator in ipairs(animators) do
-        animator.hasTicked = false
-    end
 end
-local function renderPose(pose, delta)
-    -- run children first so deepest in are updated first
-    local kidsList = pose.childOrder
-    if kidsList ~= {} then
-        for _, name in ipairs(kidsList) do
-            --print(name)
-            renderPose(pose.children[name], delta)
+local renderSets = {}
+function Poses:render(delta)
+    for i = 1, #renderSets, 1 do
+        for j = 1, #renderSets[i], 1 do
+            renderSets[i][j]:render(delta)
         end
     end
-
-    -- render pose if it's got the strength
-    if pose.animator ~= nil and (Poses:getStrengthOfDescendant(pose) ~= 0 or pose.animator.renderIfHidden) then
-        pose:render(delta)
-    end
-end function Poses:render(delta)
-    renderPose(Poses, delta)
 end
 
-
-
-Animator = {}
-function Animator:new(init, tick, render, ignoreRenderOptimizer)
+local handler = {isHandler = true}
+function handler:new(init, tick, render)
     local o = {}
     init(o)
-    o.tickFunc = tick
+    o.tick = tick
     o.render = render
-    o.hasTicked = false
-    if ignoreRenderOptimizer == nil then
-        o.renderIfHidden = false
-    else
-        o.renderIfHidden = ignoreRenderOptimizer
-    end
-    setmetatable(o, {__index = Animator})
-    if animators == {} then
-        animators[1] = o
-    else
-        animators[#animators+1] = o
-    end
+    setmetatable(o, {__index = self})
     return o
-end function Animator:tick()
-    if not self.animator.hasTicked then
-        self.animator.tickFunc(self)
-        self.animator.hasTicked = true
-    end
+end
+
+function Pose:setHandler(init, tick, render)
+    self.animator = handler:new(init, tick, render)
+end
+
+Animator = {isHandler = false}
+function Animator:new(init, tick, render)
+    local o = handler:new(init, tick, render)
+    animators[#animators+1] = o
+    setmetatable(o, {__index = self})
+    return o
 end
 
 --[[template:
@@ -330,6 +317,44 @@ end, function (self) -- tick
 end, function (self, delta) -- render
 end)
 ]]
+
+
+function Animator.init()
+    -- poses are already mapped by depth
+    -- sort up the poses with animators
+    
+    local tickableCount = 0
+    local renderableCount = 0
+    for i = #poseAtDepth, 1, -1 do
+        local hasTickable = false
+        local hasRenderable = false
+        for j = #poseAtDepth[i], 1, -1 do
+            local currentPose = poseAtDepth[i][j]
+            if currentPose.animator ~= nil then
+                local isHandler = currentPose.animator.isHandler
+                if hasRenderable == false then
+                    hasRenderable = true
+                    renderableCount = renderableCount + 1
+                    renderSets[renderableCount] = {}
+                    
+                end
+                renderSets[renderableCount][#renderSets[renderableCount]+1] = currentPose
+
+                if isHandler then
+                    if not hasTickable then
+                        hasTickable = true
+                        tickableCount = tickableCount + 1
+                        tickSets[tickableCount] = {}
+                    end
+                    tickSets[tickableCount][#tickSets[tickableCount]+1] = currentPose
+                end
+            end
+        end
+    end
+end
+
+
+
 
 
 

@@ -47,7 +47,7 @@ end function Poses.goop.show()
   Poses.goop.strength = 1
 end
 
-Poses.goop:setAnimator(Animator:new(function (self)
+Poses.goop:setHandler(function (self)
   end, function (self)
   end, function (self, delta)
     -- copy rotation
@@ -106,7 +106,7 @@ Poses.goop:setAnimator(Animator:new(function (self)
     self:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck))
     self:setPivot(models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2, Poses.form:getPivot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head))
   end
-))
+)
 
 
 
@@ -169,7 +169,7 @@ Poses.form.isTransforming = false
 Poses.form.amphinity = SmoothVal:new(1,0.15)
 Poses.form.goopening = SmoothVal:new(0,0.3)
 
-Poses.form:setAnimator( Animator:new(function (self)
+Poses.form:setHandler(function (self)
   end, function (self)
     if self.isTransforming then
       if self.goopening.new > 0.99 then
@@ -204,7 +204,7 @@ Poses.form:setAnimator( Animator:new(function (self)
     Poses.form.player.strength = 1 - self.amphinity:getAt(delta)
     Poses.form.amphi.strength = self.amphinity:getAt(delta)
   end
-))
+)
 
 
 
@@ -237,7 +237,7 @@ end
 
 Poses.form.amphi.pose.normal.posture.biped.ducking.cameraPivot = SmoothVal:new(vec(0,0.4,0), 0.3)
 
-Poses.form.amphi.pose.normal.posture.biped.ducking:setAnimator( Animator:new(function (self) -- init
+Poses.form.amphi.pose.normal.posture.biped.ducking:setHandler(function (self) -- init
   end, function (self) -- tick
     self.cameraPivot:advance()
   end, function (self, delta) -- render
@@ -311,7 +311,7 @@ Poses.form.amphi.pose.normal.posture.biped.ducking:setAnimator( Animator:new(fun
 
     self:setCamera(self.cameraPivot:getAt(delta))
   end
-))
+)
 
 
 
@@ -375,7 +375,7 @@ Poses.form.amphi.pose.normal.posture.standingKeybind.release = pings.standDown
 Poses.form.amphi.pose.normal.posture.standingness = SmoothVal:new(0,0.15)
 Poses.form.amphi.pose.normal.posture.adjustTail = SmoothVal:new(0,0.15)
 
-Poses.form.amphi.pose.normal.posture:setAnimator( Animator:new(function (self)
+Poses.form.amphi.pose.normal.posture:setHandler(function (self)
   end, function (self)
     if not self.isStanding() then
       self.standingness.target = 0
@@ -397,7 +397,7 @@ Poses.form.amphi.pose.normal.posture:setAnimator( Animator:new(function (self)
     self.polyped.strength = 1 - standingness
     self.biped.moveTail.strength = self.adjustTail:getAt(delta)
   end
-))
+)
 
 
 
@@ -417,27 +417,18 @@ function pings.toggleWag()
   end
 end
 
-local function getCumulativeRotOfPose(part)
-  local rot = vec(0,0,0)
-  repeat
-    rot = rot + Poses.form.amphi.pose:getRot(part)
-    part = part:getParent()
-  until(part == nil)
-  return rot
-end
-
-Poses.form.amphi.wag:setAnimator(Animator:new(function (self) -- init
+Poses.form.amphi.wag:setHandler(function (self) -- init
 end, function (self) -- tick
   self.tailYaw:advance()
 end, function (self, delta) -- render
   local tailWagVec = vec(0, self.tailYaw:getAt(delta), 0)
   self:setRot(models.amphi.root.Amphi.Hips.TailBase, tailWagVec)
   self:setRot(models.amphi.root.Amphi.Hips.TailBase.TailTip, tailWagVec)
-end))
+end)
 
 
 -- looking system --
-Poses.form.amphi.pose.normal.look:setAnimator(Animator:new(function (self) -- init
+Poses.form.amphi.pose.normal.look:setHandler(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta) -- render
   local headRotation = vanilla_model.HEAD:getOriginRot()
@@ -453,9 +444,9 @@ end, function (self, delta) -- render
   self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck), headRotation / 3 + vec(30,0,0)))
   self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, QoL.getGlobalRotation(Poses.form.amphi.pose.normal.posture:getCumulativeRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head), headRotation / 3 + vec(-30,0,0)))
   
-end))
+end)
 
-Poses.form.player.look:setAnimator(Animator:new(function (self) -- init
+Poses.form.player.look:setHandler(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta) -- render
   local headRot = vanilla_model.HEAD:getOriginRot()
@@ -463,7 +454,7 @@ end, function (self, delta) -- render
   headRot.y = 0
 
   self:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, headRot)
-end))
+end)
 
 
 
@@ -546,7 +537,7 @@ Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.
 Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head.LeftEar, vec(55,10,40))
 Poses.form.amphi.pose.sleep:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head.RightEar, vec(55,-10,-40))
 
-Poses.form.amphi.pose:setAnimator(Animator:new(function (self) -- init
+Poses.form.amphi.pose:setHandler(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta) -- render
   if player:getPose() == "SLEEPING" then
@@ -556,12 +547,12 @@ end, function (self, delta) -- render
     self.sleep.strength = 0
     self.normal.strength = 1
   end
-end))
+end)
 
 Poses.form.amphi.pose.sleep.firstPerson:setCamera(vec(0.39,-0.2,0))
 Poses.form.amphi.pose.sleep.firstPerson:setCamRot(vec(0,180,0))
 
-Poses.form.amphi.pose.sleep.firstPerson:setAnimator(Animator:new(function (self) -- init
+Poses.form.amphi.pose.sleep.firstPerson:setHandler(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta) -- render
   if renderer:isFirstPerson() then
@@ -569,7 +560,7 @@ end, function (self, delta) -- render
   else
     self.strength = 0
   end
-end))
+end)
 
 
 
@@ -579,13 +570,11 @@ Croucher = Animator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta) -- render
   if player:isCrouching() then
-    self.yes.strength = 1
-    self.no.strength = 0
+    self.strength = 1
   else
-    self.yes.strength = 0
-    self.no.strength = 1
+    self.strength = 0
   end
-end, true)
+end)
 
 sneakHandler = animSystem:new(
   function (self) -- init
@@ -609,15 +598,15 @@ Runner = Animator:new(function (self) -- init
   self.running = SmoothVal:new(0, 0.2)
 end, function (self) -- tick
   if player:getPose() == "STANDING" and player:isSprinting() then
-    self.animator.running.target = 1
+    self.running.target = 1
   else
-    self.animator.running.target = 0
+    self.running.target = 0
   end
 
-  self.animator.running:advance()
+  self.running:advance()
 end, function (self, delta) -- render
   self.strength = self.animator.running:getAt(delta)
-end, true)
+end)
 
 Poses.form.amphi.pose.normal.posture.polyped.run:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, vec(-20,0,0))
 Poses.form.amphi.pose.normal.posture.polyped.run:setRot(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, vec(20,0,0))
@@ -632,15 +621,15 @@ Glider = Animator:new(function (self) -- init
   self.gliding = SmoothVal:new(0, 0.2)
 end, function (self) -- tick
   if player:getPose() == "FALL_FLYING" then
-    self.animator.gliding.target = 1
+    self.gliding.target = 1
   else
-    self.animator.gliding.target = 0
+    self.gliding.target = 0
   end
 
-  self.animator.gliding:advance()
+  self.gliding:advance()
 end, function (self, delta) -- render
   self.strength = self.animator.gliding:getAt(delta)
-end, true)
+end)
 
 
 
@@ -686,13 +675,17 @@ ActionPages.amphiMainPage:newAction()
 
 
 -- core events --
---entity init event, used for when the avatar entity is loaded for the first time
+
+-- stuff to execute after all the "setup"
+Animator.init()
+
+-- entity init event, used for when the avatar entity is loaded for the first time
 function events.entity_init()
   models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head:setParentType("None")
   models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2:setParentType("None")
 end
 
---tick event, called 20 times per second
+-- tick event, called 20 times per second
 function events.tick()
   --code goes here
 
@@ -700,18 +693,15 @@ function events.tick()
   --print(player:getRot())
 end
 
---render event, called every time your avatar is rendered
+-- render event, called every time your avatar is rendered
 --it have two arguments, "delta" and "context"
 --"delta" is the percentage between the last and the next tick (as a decimal value, 0.0 to 1.0)
 --"context" is a string that tells from where this render event was called (the paperdoll, gui, player render, first person)
-
 function events.render(delta, context)
   -- render animators in order
   --print(context)
-  if context == "RENDER" or context == "FIRST_PERSON" then
-    Poses:render(delta)
-    Poses:apply()
-  end
+  Poses:render(delta)
+  Poses:apply()
 
   
 end
