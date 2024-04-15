@@ -1,10 +1,18 @@
 
-What I want for a new system:
+The New System:
+    What I want for a new system:
 - lightweight
 - uses objects that index with the modelPart to store their data, hopefully making things more intuitive
 - still heavily based around code
 
-I'll need to unzip an older version for copying over the more static poses, because I just don't think I can deal with the old code crowding up the script.
+    What I'll do to achieve it:
+- Animators write onto pose like data objects
+- Possibly will have it really be just one that adds the value on?
+- might use blockbench animations for static poses, and to adjust the model back down
+
+    I'll need to unzip an older version for copying over the more static poses, because I just don't think I can deal with the old code crowding up the script.
+
+
 
 
 

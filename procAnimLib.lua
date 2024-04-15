@@ -22,7 +22,7 @@ end
 
 
 
--- SmoothVal Handling
+-- SmoothVal
 SmoothVal = {}
 function SmoothVal:getAt(delta)
     return math.lerp(self.old, self.new, delta)
@@ -62,4 +62,13 @@ end function Oscillator:advance()
     self.deviation:advance()
     self.advanceBy:advance()
     SmoothVal.advance(self)
+end
+
+
+
+-- animation thingy --
+PoseData = {}
+
+local animator = {}
+function animator.new()
 end
