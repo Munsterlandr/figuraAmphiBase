@@ -1,36 +1,21 @@
 
-pose planning:
-The order registered does matter, as it determines the order of execution of animators.
-suffixes: none means it's got no code directly messing with it, !<animator> means it has an animator, # means comment. If the ! is not followed by anything, it instead has a handler, which is a specialized version of an animator which is unique to a specific pose.
+What I want for a new system:
+- lightweight
+- uses objects that index with the modelPart to store their data, hopefully making things more intuitive
+- still heavily based around code
 
-poses
-    form!
-        player
-            crouch!croucher
-            look!
-        amphi
-            pose!
-                restPose
-                    isFirstPerson!
-                normal
-                    posture!
-                        biped
-                            crouch!croucher
-                            run!runner
-                            glide!
-                            ducking!
-                            shiftTail
-                        polyped
-                            crouch!croucher
-                            run!runner
-                        run!runner
-                    look!
-            wag!
-            ears!
-    goop!
-        hide
+I'll need to unzip an older version for copying over the more static poses, because I just don't think I can deal with the old code crowding up the script.
+
+
+
+On the pose system:
+Though it could still be potentially really powerful, it was too processor intensive, so it had to be scrapped.
+
+
 
 Ears system rework:
 Move a lot of the specific pose stuff to their respective poses, and instead only have the ears pose add some physics to them.
 
 The new physics system should work by calculating the angle towards the tip of the ear during the last tick, and readjust based on how big that angle is.
+
+I'll also implement a thing so the player looks surprised or concerned when velocity is low while using an elytra.
