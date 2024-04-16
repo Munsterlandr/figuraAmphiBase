@@ -82,6 +82,13 @@ function PartData.__add(a, b)
     c.scale = a.scale * b.scale
     c.pivot = a.pivot + b.pivot
     return c
+end function PartData.__mul(a, b)
+    local c = PartData:new()
+    c.rot = a.rot * b
+    c.pos = a.pos * b
+    -- ignore scale
+    c.pivot = a.pivot * b
+    return c
 end
 function PartData:new()
     local o = {}
@@ -122,9 +129,7 @@ end function PoseData.__mul(a,b) -- b must be a number
     c.camPos = a.camPos * b
     c.camRot = a.camRot * b
     for part, data in pairs(a.parts) do
-        for _, val in pairs(data) do
-            c[part][val] = val * b
-        end
+        c.parts[part] = data * b
     end
     return c
 end
@@ -133,6 +138,15 @@ function PoseData:new()
     o.parts = {}
     setmetatable(o, PoseData)
     return o
+end function PoseData:add(pose)
+    self.camPos = self.camPos + pose.camPos
+    self.camRot = self.camRot + pose.camRot
+    for part, data in pairs(pose.parts) do
+        if self.parts[part] == nil then
+            self.parts[part] = PartData:new()
+        end
+        self.parts[part] = self.parts[part] + data
+    end
 end
 
 -- testing a thing for the PoseData stuff

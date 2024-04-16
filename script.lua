@@ -2,6 +2,11 @@ require "procAnimLib"
 
 
 
+-- currentPose variable (it's more efficient) --
+local currentPose
+
+
+
 -- Form PoseDatas --
 
 AmphiForm = PoseData:new()
@@ -13,12 +18,24 @@ HumanForm = PoseData:new() -- if you've added extra geometry please edit this to
 
 -- goop syncer --
 Goop = Animator:new(function (self) -- init
-  
   self.goopening = SmoothVal:new(0, 0.3)
 end, function (self) -- tick
   self.goopening:advance()
 end, function (self, delta, pose) -- render
+  pose.parts[models.amphi.root.Goops] = pose[models.amphi.root.Amphi]
+  pose.parts[models.amphi.root.Goops.Hips2] = pose[models.amphi.root.Amphi.Hips]
+  pose.parts[models.amphi.root.Goops.Hips2.Legs2] = pose[models.amphi.root.Amphi.Hips.Legs]
+  pose.parts[models.amphi.root.Goops.Hips2.Legs2.LeftLeg2] = pose[models.amphi.root.Amphi.Hips.Legs.LeftLeg]
+  pose.parts[models.amphi.root.Goops.Hips2.Legs2.RightLeg2] = pose[models.amphi.root.Amphi.Hips.Legs.RightLeg]
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2] = pose[models.amphi.root.Amphi.Hips.Waist]
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders]
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms]
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm]
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm]
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck]
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head]
 
+  -- do the goopening (todo)
 end)
 
 
@@ -104,6 +121,92 @@ end)
 
 
 
+-- standing system --
+StandUp = Animator:new(function (self) -- init
+  self.standingness = SmoothVal:new(0, 0.2)
+  self.tailAdjustness = SmoothVal:new(0,0.2)
+
+  self.shouldStand = false
+
+  self.standingPose = PoseData:new()
+  self.standingPose[models.amphi.root.Amphi.Hips].rot = vec(65,0,0)
+  self.standingPose[models.amphi.root.Amphi.Hips.Legs].rot = vec(-65,0,0)
+  self.standingPose[models.amphi.root.Amphi.Hips.Waist].rot = vec(10,0,0)
+  self.standingPose[models.amphi.root.Amphi.Hips.Waist.Shoulders].rot = vec(10,0,0)
+  self.standingPose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms].rot = vec(-85,0,0)
+  self.standingPose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck].rot = vec(-10,0,0)
+  self.standingPose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head].rot = vec(-75,0,0)
+
+  self.tailAdjustPose = PoseData:new()
+  self.tailAdjustPose[models.amphi.root.Amphi.Hips].rot = vec(-20,0,0)
+  self.tailAdjustPose[models.amphi.root.Amphi.Hips.TailBase].rot = vec(-25,0,0)
+  self.tailAdjustPose[models.amphi.root.Amphi.Hips.TailBase.TailTip].rot = vec(-25,0,0)
+  self.tailAdjustPose[models.amphi.root.Amphi.Hips.Legs].rot = vec(20,0,0)
+  self.tailAdjustPose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms].rot = vec(20,0,0)
+
+end, function (self) -- tick
+  if self:isStanding() then
+    self.standingness.target = 1
+    if currentPose == "SWIMMING" or currentPose == "FALL_FLYING" then
+      self.tailAdjustness.target = 0
+    else
+      self.tailAdjustness.target = 1
+    end
+  else
+    self.standingness.target = 0
+    self.tailAdjustness.target = 0
+  end
+
+  self.standingness:advance()
+  self.tailAdjustness:advance()
+end, function (self, delta, pose) -- render
+  local standingness = self.standingness:getAt(delta)
+  local tailAdjustness = self.tailAdjustness:getAt(delta)
+  pose:add((self.standingPose * standingness) + (self.tailAdjustPose * tailAdjustness))
+end)
+function StandUp:isStanding()
+  local mainUseAction = player:getHeldItem():getUseAction()
+  local sideUseAction = player:getHeldItem(true):getUseAction()
+  --[[print(mainUseAction)
+  print(sideUseAction)
+  print(player:isUsingItem())--]]
+
+  local itemNeedsBiped = player:isUsingItem()
+  if (mainUseAction == "NONE" or mainUseAction == "EAT" or mainUseAction == "DRINK" or mainUseAction == "BRUSH" ) and (sideUseAction == "NONE" or sideUseAction == "EAT" or sideUseAction == "DRINK" or sideUseAction == "BRUSH") then
+    itemNeedsBiped = false
+  elseif mainUseAction == "CROSSBOW" or sideUseAction == "CROSSBOW" or player:riptideSpinning() then
+    itemNeedsBiped = true
+  end
+
+  if currentPose == "SLEEPING" then
+    return false
+  elseif currentPose == "SWIMMING" or currentPose == "FALL_FLYING" or player:isClimbing() or itemNeedsBiped or player:isFishing() or player:getControlledVehicle() ~= nil then
+    return true
+  else
+    return self.shouldStand
+  end
+end
+
+function pings.standUp()
+  StandUp.shouldStand = true
+end function pings.standDown()
+  StandUp.shouldStand = false
+end
+
+StandUp.keybind = keybinds:newKeybind("Stand Up", "key.keyboard.tab", true)
+StandUp.keybind.press = pings.standUp
+StandUp.keybind.release = pings.standDown
+
+
+
+-- cam handler --
+Ducking = Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta, pose) -- render
+end)
+
+
+
 -- action wheel --
 ActionPages = {
   amphiMainPage = action_wheel:newPage(),
@@ -151,7 +254,10 @@ end
 
 -- tick event, called 20 times per second
 function events.tick()
+  currentPose = player:getPose() -- it's more efficient
+
   if Tf.isAmphi then
+    StandUp:tick()
     AmphiLook:tick()
   end
   if Tf.isTransforming or not Tf.isAmphi then
@@ -172,12 +278,14 @@ function events.render(delta, context)
   local amphiPose
   if Tf.isAmphi == true then
     amphiPose = PoseData:new() + AmphiForm
-
+    StandUp:render(delta, amphiPose)
     AmphiLook:render(delta, amphiPose)
   end
   local humanPose
   if Tf.isTransforming or not Tf.isAmphi then
     humanPose = PoseData:new() + HumanForm
+
+    PlayerLook:render(delta, humanPose)
   end
 
 
