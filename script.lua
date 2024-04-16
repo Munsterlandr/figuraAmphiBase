@@ -2,6 +2,15 @@ require "procAnimLib"
 
 
 
+-- Form PoseDatas --
+
+AmphiForm = PoseData:new()
+AmphiForm[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm].pos = vec(2,0,0)
+AmphiForm[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm].pos = vec(-2,0,0)
+
+HumanForm = PoseData:new() -- if you've added extra geometry please edit this to have it tuck it away!
+
+
 -- goop syncer --
 Goop = Animator:new(function (self) -- init
   
@@ -19,13 +28,6 @@ Tf = Animator:new(function (self) -- init
   self.isTransforming = false
   self.isAmphi = true
   self.amphinity = SmoothVal:new(1, 0.15)
-
-  -- forms
-  self.noodleForm = PoseData:new()
-  self.noodleForm[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm].pos = vec(2,0,0)
-  self.noodleForm[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm].pos = vec(-2,0,0)
-
-  self.humanForm = PoseData:new() -- if you've added extra geometry please edit this to have it tuck it away!
 end, function (self) -- tick
   if self.isTransforming then
     -- WIP
@@ -54,6 +56,51 @@ end
 -- hiding vanilla model --
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.CAPE:setVisible(false)
+
+
+
+-- look around --
+local function getCumulativeRotOfPoseData(pose, part)
+  local rot = vec(0,0,0)
+  repeat
+    rot = rot + pose[part].rot
+    part = part:getParent()
+  until(part == nil)
+  return rot
+end
+local function addGlobalRotTo(pose, part, rot)
+  pose[part].rot = pose[part].rot + QoL.getGlobalRotation(getCumulativeRotOfPoseData(pose, part), rot)
+end
+AmphiLook = Animator:new(function (self) -- init
+  self.neckAngle = SmoothVal:new(vec(30,0,0), 0.3)
+end, function (self) -- tick
+  if player:isSprinting() then
+    self.neckAngle.target = vec(10,0,0)
+  else
+    self.neckAngle.target = vec(30,0,0)
+  end
+
+  self.neckAngle:advance()
+end, function (self, delta, pose) -- render
+  local headRot = vanilla_model.HEAD:getOriginRot()
+  headRot.y = (headRot.y + 180)%360 - 180
+  
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, headRot / 3 - self.neckAngle:getAt(delta))
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, headRot / 3 + self.neckAngle:getAt(delta))
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, (headRot / -3)*vec(1,0,-1) )
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist.Shoulders, headRot / 3)
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist, headRot / 3)
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.TailBase.TailTip, headRot / -3 * vec(-1,1,1))
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.TailBase, headRot / -3 * vec(-1,1,1))
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Legs, (headRot / 3)*vec(1,0,-1))
+  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips, headRot / -3) --]]
+end)
+
+PlayerLook = Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta, pose) -- render
+  
+end)
 
 
 
@@ -89,13 +136,6 @@ ActionPages.humanMainPage:newAction()
   :item("glow_lichen")
   :onLeftClick(pings.transform)
 
-ActionPages.amphiMainPage:newAction()
-  :toggleTitle("enable extra camera height")
-  :toggleItem("observer")
-  :title("disable extra camera height")
-  :item("barrier")
-  :setOnToggle(pings.toggleAllowCamHeight)
-
 
 
 -- core events --
@@ -111,6 +151,13 @@ end
 
 -- tick event, called 20 times per second
 function events.tick()
+  if Tf.isAmphi then
+    AmphiLook:tick()
+  end
+  if Tf.isTransforming or not Tf.isAmphi then
+
+  end
+  Tf:tick()
 end
 
 -- render event, called every time your avatar is rendered
@@ -124,11 +171,13 @@ function events.render(delta, context)
   -- apply the functions
   local amphiPose
   if Tf.isAmphi == true then
-    amphiPose = PoseData:new() + Tf.noodleForm
+    amphiPose = PoseData:new() + AmphiForm
+
+    AmphiLook:render(delta, amphiPose)
   end
   local humanPose
   if Tf.isTransforming or not Tf.isAmphi then
-    humanPose = PoseData:new() + Tf.humanForm
+    humanPose = PoseData:new() + HumanForm
   end
 
 
@@ -139,7 +188,7 @@ function events.render(delta, context)
   renderer:setEyeOffset(finalPose.camPos)
   renderer:setCameraPos(finalPose.camPos)
   for part, data in pairs(finalPose.parts) do
-    part:setOffsetRot(data.rot) -- to avoid the pivots getting weird
+    part:setRot(data.rot)
     part:setPos(data.pos)
     part:setScale(data.scale)
     part:setOffsetPivot(data.pivot)
