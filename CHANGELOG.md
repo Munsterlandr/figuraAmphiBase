@@ -4,9 +4,7 @@ Avatar version: 1.2a
 Texture's accessory layers have basically the same UVs as the base layers, but shifted horizontally +64 pixels.
 
 ## Changes
-* refactored code _again_
-* begun work on completely new animation system _again_
-* moved transformation handler to the front of the script so it's easier to edit
+* rewriting code from (almost) scratch to redo the animation system
 
 ## Known issues
 * animations for using a spyglass and blowing a horn don't look good

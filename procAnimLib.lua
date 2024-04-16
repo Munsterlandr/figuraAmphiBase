@@ -67,8 +67,101 @@ end
 
 
 -- animation thingy --
-PoseData = {}
-
-local animator = {}
-function animator.new()
+PartData = {
+    __index = {
+        rot = vec(0,0,0),
+        pos = vec(0,0,0),
+        scale = vec(1,1,1),
+        pivot = vec(0,0,0)
+    }
+}
+function PartData.__add(a, b)
+    local c = PartData:new()
+    c.rot = a.rot + b.rot
+    c.pos = a.pos + b.pos
+    c.scale = a.scale * b.scale
+    c.pivot = a.pivot + b.pivot
+    return c
 end
+function PartData:new()
+    local o = {}
+    setmetatable(o, PartData)
+    return o
+end
+
+PoseData = {
+    camPos = vec(0,0,0),
+    camRot = vec(0,0,0)
+}
+function PoseData.__index(table, key)
+    if type(key) == 'string' then
+        return PoseData[key]
+    else -- assumes its a modelPart
+        if table.parts[key] == nil then
+            local newPartData = PartData:new()
+            table.parts[key] = newPartData
+        end
+        return table.parts[key]
+    end
+end function PoseData.__add(a,b) -- assumes both are PoseData
+    local c = PoseData:new()
+    c.camPos = a.camPos + b.camPos
+    c.camRot = a.camRot + b.camRot
+    for part, data in pairs(a.parts) do
+        c.parts[part] = data
+    end
+    for part, data in pairs(b.parts) do
+        if c.parts[part] == nil then
+            c.parts[part] = PartData:new()
+        end
+        c.parts[part] = c.parts[part] + data
+    end
+    return c
+end function PoseData.__mul(a,b) -- b must be a number
+    local c = PoseData:new()
+    c.camPos = a.camPos * b
+    c.camRot = a.camRot * b
+    for part, data in pairs(a.parts) do
+        for _, val in pairs(data) do
+            c[part][val] = val * b
+        end
+    end
+    return c
+end
+function PoseData:new()
+    local o = {}
+    o.parts = {}
+    setmetatable(o, PoseData)
+    return o
+end
+
+-- testing a thing for the PoseData stuff
+--[[local a = PoseData:new()
+a:test()
+print(a[models])
+print(a[models].rot)
+a[models].rot = vec(90,0,0)
+
+print(a[models].rot) --]]
+
+Animator = {}
+function Animator:tick()
+end function Animator:render(delta, netPose)
+    return netPose
+end
+Animator.__index = Animator
+function Animator:new(init, tick, render)
+    local o = {}
+    init(o)
+    o.tick = tick
+    o.render = render
+    setmetatable(o, Animator)
+    return o
+end
+
+--[[ animator template:
+Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta, pose) -- render
+end)
+]]
