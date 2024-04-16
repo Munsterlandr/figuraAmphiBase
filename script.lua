@@ -54,7 +54,7 @@ end, function (self) -- tick
 end, function (self, delta, pose, amphiPose, humanPose) -- render
   if self.isTransforming and self.isAmphi then
     local amphinity = self.amphinity:getAt(delta)
-    return pose + (amphiPose) * amphinity + humanPose * (1 - amphinity)
+    return pose + amphiPose:potency(amphinity) + humanPose:potency(1 - amphinity)
   elseif self.isAmphi then
     return pose + amphiPose
   else

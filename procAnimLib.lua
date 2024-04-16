@@ -151,6 +151,12 @@ end function PoseData:add(pose)
         end
         self.parts[part] = self.parts[part] + data
     end
+end function PoseData:potency(val)
+    self.camPos = self.camPos * val
+    self.camRot = self.camRot * val
+    for _,data in pairs(self.parts) do
+        data:potency(val)
+    end
 end
 function PoseData:part(part)
     if self.parts[part] == nil then
