@@ -9,7 +9,7 @@ function QoL.getTableSize(table)
     end
     return size
 end function QoL.getGlobalRotation(currentRot, addedRot)
-    return matrices.rotation4(-currentRot):apply(addedRot)
+    return matrices.rotation4(currentRot):apply(addedRot)
 end function QoL.listContainsVal(list, val)
     local hasVal = false
     for i = 1, #list, 1 do
@@ -67,13 +67,12 @@ end
 
 
 -- animation thingy --
+-- PartData
 PartData = {
-    __index = {
-        rot = vec(0,0,0),
-        pos = vec(0,0,0),
-        scale = vec(1,1,1),
-        pivot = vec(0,0,0)
-    }
+    rot = vec(0,0,0),
+    pos = vec(0,0,0),
+    scale = vec(1,1,1),
+    pivot = vec(0,0,0)
 }
 function PartData.__add(a, b)
     local c = PartData:new()
@@ -94,35 +93,32 @@ function PartData:new()
     local o = {}
     setmetatable(o, PartData)
     return o
+end function PartData:copy()
+    local new = PartData:new()
+    for key, value in pairs(self) do
+        new[key] = value
+    end
+    return new
+end function PartData:add(data)
+    self.rot = self.rot + data.rot
+    self.pos = self.pos + data.pos
+    self.scale = self.scale * data.scale
+    self.pivot = self.pivot + data.pivot
+end function PartData:potency(val)
+    self.rot = self.rot * val
+    self.pos = self.pos * val
+    self.scale = self.scale * val + (self.scale*(1-val))
+    self.pivot = self.pivot * val
 end
+PartData.__index = PartData
 
 PoseData = {
     camPos = vec(0,0,0),
     camRot = vec(0,0,0)
 }
-function PoseData.__index(table, key)
-    if type(key) == 'string' then
-        return PoseData[key]
-    else -- assumes its a modelPart
-        if table.parts[key] == nil then
-            local newPartData = PartData:new()
-            table.parts[key] = newPartData
-        end
-        return table.parts[key]
-    end
-end function PoseData.__add(a,b) -- assumes both are PoseData
-    local c = PoseData:new()
-    c.camPos = a.camPos + b.camPos
-    c.camRot = a.camRot + b.camRot
-    for part, data in pairs(a.parts) do
-        c.parts[part] = data
-    end
-    for part, data in pairs(b.parts) do
-        if c.parts[part] == nil then
-            c.parts[part] = PartData:new()
-        end
-        c.parts[part] = c.parts[part] + data
-    end
+function PoseData.__add(a,b) -- assumes both are PoseData
+    local c = a:copy()
+    c:add(b)
     return c
 end function PoseData.__mul(a,b) -- b must be a number
     local c = PoseData:new()
@@ -132,12 +128,20 @@ end function PoseData.__mul(a,b) -- b must be a number
         c.parts[part] = data * b
     end
     return c
-end
+end PoseData.__index = PoseData
 function PoseData:new()
     local o = {}
     o.parts = {}
     setmetatable(o, PoseData)
     return o
+end function PoseData:copy()
+    local new = PoseData:new()
+    new.camPos = self.camPos
+    new.camRot = self.camRot
+    for part, data in pairs(self.parts) do
+        new.parts[part] = data:copy()
+    end
+    return new
 end function PoseData:add(pose)
     self.camPos = self.camPos + pose.camPos
     self.camRot = self.camRot + pose.camRot
@@ -148,15 +152,29 @@ end function PoseData:add(pose)
         self.parts[part] = self.parts[part] + data
     end
 end
+function PoseData:part(part)
+    if self.parts[part] == nil then
+        self.parts[part] = PartData:new()
+    end
+    return self.parts[part]
+end function PoseData:checkPart(part)
+    if self.parts[part] == nil then
+        return PartData
+    else
+        return self.parts[part]
+    end
+end
+function PoseData:getCumulativeRot(part)
+    local rot = vec(0,0,0)
 
--- testing a thing for the PoseData stuff
---[[local a = PoseData:new()
-a:test()
-print(a[models])
-print(a[models].rot)
-a[models].rot = vec(90,0,0)
-
-print(a[models].rot) --]]
+    repeat
+      if self.parts[part] ~= nil then
+        rot = rot + self.parts[part].rot
+      end
+      part = part:getParent()
+    until(part == nil)
+    return rot
+  end
 
 Animator = {}
 function Animator:tick()

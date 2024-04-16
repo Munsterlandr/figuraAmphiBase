@@ -10,8 +10,8 @@ local currentPose
 -- Form PoseDatas --
 
 AmphiForm = PoseData:new()
-AmphiForm[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm].pos = vec(2,0,0)
-AmphiForm[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm].pos = vec(-2,0,0)
+AmphiForm:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm).pos = vec(2,0,0)
+AmphiForm:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm).pos = vec(-2,0,0)
 
 HumanForm = PoseData:new() -- if you've added extra geometry please edit this to have it tuck it away!
 
@@ -22,18 +22,18 @@ Goop = Animator:new(function (self) -- init
 end, function (self) -- tick
   self.goopening:advance()
 end, function (self, delta, pose) -- render
-  pose.parts[models.amphi.root.Goops] = pose[models.amphi.root.Amphi]
-  pose.parts[models.amphi.root.Goops.Hips2] = pose[models.amphi.root.Amphi.Hips]
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2] = pose[models.amphi.root.Amphi.Hips.Legs]
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2.LeftLeg2] = pose[models.amphi.root.Amphi.Hips.Legs.LeftLeg]
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2.RightLeg2] = pose[models.amphi.root.Amphi.Hips.Legs.RightLeg]
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2] = pose[models.amphi.root.Amphi.Hips.Waist]
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders]
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms]
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm]
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm]
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck]
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2] = pose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head]
+  pose.parts[models.amphi.root.Goops] = pose:checkPart(models.amphi.root.Amphi)
+  pose.parts[models.amphi.root.Goops.Hips2] = pose:checkPart(models.amphi.root.Amphi.Hips)
+  pose.parts[models.amphi.root.Goops.Hips2.Legs2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs)
+  pose.parts[models.amphi.root.Goops.Hips2.Legs2.LeftLeg2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs.LeftLeg)
+  pose.parts[models.amphi.root.Goops.Hips2.Legs2.RightLeg2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs.RightLeg)
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist)
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders)
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms)
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm)
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm)
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck)
+  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head)
 
   -- do the goopening (todo)
 end)
@@ -76,19 +76,8 @@ vanilla_model.CAPE:setVisible(false)
 
 
 
--- look around --
-local function getCumulativeRotOfPoseData(pose, part)
-  local rot = vec(0,0,0)
-  repeat
-    rot = rot + pose[part].rot
-    part = part:getParent()
-  until(part == nil)
-  return rot
-end
-local function addGlobalRotTo(pose, part, rot)
-  pose[part].rot = pose[part].rot + QoL.getGlobalRotation(getCumulativeRotOfPoseData(pose, part), rot)
-end
-AmphiLook = Animator:new(function (self) -- init
+-- neck pose adjuster --
+NeckPoser = Animator:new(function (self) -- init
   self.neckAngle = SmoothVal:new(vec(30,0,0), 0.3)
 end, function (self) -- tick
   if player:isSprinting() then
@@ -99,18 +88,20 @@ end, function (self) -- tick
 
   self.neckAngle:advance()
 end, function (self, delta, pose) -- render
+  local neckAngle = self.neckAngle:getAt(delta)
+
+  pose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot + neckAngle
+  pose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot - neckAngle
+end)
+
+
+
+-- look around --
+AmphiLook = Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta, pose) -- render
   local headRot = vanilla_model.HEAD:getOriginRot()
   headRot.y = (headRot.y + 180)%360 - 180
-  
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, headRot / 3 - self.neckAngle:getAt(delta))
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, headRot / 3 + self.neckAngle:getAt(delta))
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, (headRot / -3)*vec(1,0,-1) )
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist.Shoulders, headRot / 3)
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Waist, headRot / 3)
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.TailBase.TailTip, headRot / -3 * vec(-1,1,1))
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.TailBase, headRot / -3 * vec(-1,1,1))
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips.Legs, (headRot / 3)*vec(1,0,-1))
-  addGlobalRotTo(pose, models.amphi.root.Amphi.Hips, headRot / -3) --]]
 end)
 
 PlayerLook = Animator:new(function (self) -- init
@@ -129,20 +120,21 @@ StandUp = Animator:new(function (self) -- init
   self.shouldStand = false
 
   self.standingPose = PoseData:new()
-  self.standingPose[models.amphi.root.Amphi.Hips].rot = vec(65,0,0)
-  self.standingPose[models.amphi.root.Amphi.Hips.Legs].rot = vec(-65,0,0)
-  self.standingPose[models.amphi.root.Amphi.Hips.Waist].rot = vec(10,0,0)
-  self.standingPose[models.amphi.root.Amphi.Hips.Waist.Shoulders].rot = vec(10,0,0)
-  self.standingPose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms].rot = vec(-85,0,0)
-  self.standingPose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck].rot = vec(-10,0,0)
-  self.standingPose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head].rot = vec(-75,0,0)
+  self.standingPose:part(models.amphi.root.Amphi.Hips).rot = vec(65,0,0)
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Legs).rot = vec(-65,0,0)
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist).rot = vec(10,0,0)
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders).rot = vec(10,0,0)
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).rot = vec(-85,0,0)
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot = vec(-10,0,0)
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot = vec(-75,0,0)
 
   self.tailAdjustPose = PoseData:new()
-  self.tailAdjustPose[models.amphi.root.Amphi.Hips].rot = vec(-20,0,0)
-  self.tailAdjustPose[models.amphi.root.Amphi.Hips.TailBase].rot = vec(-25,0,0)
-  self.tailAdjustPose[models.amphi.root.Amphi.Hips.TailBase.TailTip].rot = vec(-25,0,0)
-  self.tailAdjustPose[models.amphi.root.Amphi.Hips.Legs].rot = vec(20,0,0)
-  self.tailAdjustPose[models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms].rot = vec(20,0,0)
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips).rot = vec(-20,0,0)
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.TailBase).rot = vec(-25,0,0)
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot = vec(-25,0,0)
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Legs).rot = vec(20,0,0)
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).rot = vec(20,0,0)
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot = vec(20,0,0)
 
 end, function (self) -- tick
   if self:isStanding() then
@@ -258,7 +250,7 @@ function events.tick()
 
   if Tf.isAmphi then
     StandUp:tick()
-    AmphiLook:tick()
+    NeckPoser:tick()
   end
   if Tf.isTransforming or not Tf.isAmphi then
 
@@ -272,13 +264,14 @@ end
 --"context" is a string that tells from where this render event was called (the paperdoll, gui, player render, first person)
 function events.render(delta, context)
   local finalPose = PoseData:new()
-  finalPose[models.amphi].pos = vec(0,-12,-13)
+  finalPose:part(models.amphi).pos = vec(0,-12,-13)
 
   -- apply the functions
   local amphiPose
   if Tf.isAmphi == true then
     amphiPose = PoseData:new() + AmphiForm
     StandUp:render(delta, amphiPose)
+    NeckPoser:render(delta, amphiPose)
     AmphiLook:render(delta, amphiPose)
   end
   local humanPose
