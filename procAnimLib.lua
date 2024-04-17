@@ -8,8 +8,11 @@ function QoL.getTableSize(table)
         end
     end
     return size
+end function QoL.applyParentRotation(childRot, parentRot)
+    return childRot:transform(matrices.rotation4(parentRot))
 end function QoL.getGlobalRotation(currentRot, addedRot)
-    return matrices.rotation4(currentRot):apply(addedRot)
+    local rotMatrix = matrices.rotation3(currentRot*vec(-1,-1,1))
+    return addedRot:transform(rotMatrix)
 end function QoL.listContainsVal(list, val)
     local hasVal = false
     for i = 1, #list, 1 do
@@ -180,7 +183,9 @@ function PoseData:getCumulativeRot(part)
       part = part:getParent()
     until(part == nil)
     return rot
-  end
+end function PoseData:globallyRotate(part, by)
+    self:part(part).rot = self:checkPart(part).rot + QoL.getGlobalRotation(self:getCumulativeRot(part), by)
+end
 
 Animator = {}
 function Animator:tick()
