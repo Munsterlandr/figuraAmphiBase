@@ -1,4 +1,4 @@
-require "versors"
+require "quaternion"
 
 -- QoLs --
 QoL = {}
