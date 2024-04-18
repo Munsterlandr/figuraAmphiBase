@@ -1,3 +1,5 @@
+require "versors"
+
 -- QoLs --
 QoL = {}
 function QoL.getTableSize(table)

@@ -103,7 +103,7 @@ end, function (self, delta, pose) -- render
   local headRot = vanilla_model.HEAD:getOriginRot()
   headRot.y = (headRot.y + 180)%360 - 180
 
-  pose:globallyRotate(models.amphi.root.Amphi.Hips, headRot / -3)
+  --[[pose:globallyRotate(models.amphi.root.Amphi.Hips, headRot / -3)
   pose:globallyRotate(models.amphi.root.Amphi.Hips.TailBase, headRot/-3 * vec(-1,1,1))
   pose:globallyRotate(models.amphi.root.Amphi.Hips.TailBase.TailTip, headRot/-3 * vec(-1,1,1))
   pose:globallyRotate(models.amphi.root.Amphi.Hips.Legs, headRot/3 * vec(1,0,1))
@@ -111,7 +111,7 @@ end, function (self, delta, pose) -- render
   pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders, headRot / 3)
   pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, headRot / -3 * vec(1,0,1))
   pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, headRot / 3)
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, headRot / 3)
+  pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, headRot / 3)--]]
 end)
 
 PlayerLook = Animator:new(function (self) -- init
