@@ -57,7 +57,25 @@ end function Quaternion:invert()
     self.k = -self.k
 end
 function Quaternion.__tostring(self)
-    return "{"..self.real..", "..self.i..", "..self.j..", "..self.k.."}"
+    local str = ""..self.real
+    if self.i < 0 then
+        str = str.."-i"
+    else
+        str = str.."+i"
+    end
+    str = str..math.abs(self.i)
+    if self.j < 0 then
+        str = str.."-j"
+    else
+        str = str.."+j"
+    end
+    str = str..math.abs(self.j)
+    if self.k < 0 then
+        str = str.."-k"
+    else
+        str = str.."+k"
+    end
+    return str..math.abs(self.k)
 end function Quaternion.__mul(a, b)
     local c = Quaternion.new(0,0,0,0)
     c.real = (a.real * b.real) - (a.i * b.i) - (a.j * b.j) - (a.k * b.k)
