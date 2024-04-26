@@ -10,11 +10,6 @@ function QoL.getTableSize(table)
         end
     end
     return size
-end function QoL.applyParentRotation(childRot, parentRot)
-    return childRot:transform(matrices.rotation4(parentRot))
-end function QoL.getGlobalRotation(currentRot, addedRot)
-    local rotMatrix = matrices.rotation3(currentRot*vec(-1,-1,1))
-    return addedRot:transform(rotMatrix)
 end function QoL.listContainsVal(list, val)
     local hasVal = false
     for i = 1, #list, 1 do
@@ -24,6 +19,20 @@ end function QoL.listContainsVal(list, val)
     end
     return hasVal
 end
+
+
+
+-- Global Rotation Helper
+GlobalRotter = {versor = Quaternion.new(1,0,0,0)}
+function GlobalRotter.new(rootPart)
+    local o = {}
+    o.versor = Quaternion.byTaitBryan(rootPart:getRot())
+    setmetatable(o, GlobalRotter)
+    return o
+end function GlobalRotter:getChild(childPart)
+end function GlobalRotter:globalizeAngle(angle)
+end
+GlobalRotter.__index = GlobalRotter
 
 
 

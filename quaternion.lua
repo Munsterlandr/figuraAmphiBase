@@ -111,8 +111,8 @@ end function Quaternion.__mul(a, b)
 end
 Quaternion.__index = Quaternion
 
--- testing
+--[[ testing
 local testBryanTait = vec(-81,80, 23)
 local testVersor = Quaternion.byTaitBryan(testBryanTait)
 print(testVersor:toAxisAngle())
-print(testVersor:toTaitBryan())
+print(testVersor:toTaitBryan()) --]]
