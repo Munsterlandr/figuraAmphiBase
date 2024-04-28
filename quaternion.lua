@@ -30,12 +30,6 @@ end function Quaternion.byTaitBryan(vect)
         cosHalfPitch*sinHalfYaw*cosHalfRoll + sinHalfPitch*cosHalfYaw*sinHalfRoll,
         cosHalfPitch*cosHalfYaw*sinHalfRoll - sinHalfPitch*sinHalfYaw*cosHalfRoll
     )
-end function Quaternion.threeStepFromTB(vect) -- todo
-    -- to axis-angle
-
-
-    -- to Versor
-
 end
 function Quaternion:copy()
     return Quaternion.new(self.real, self.i, self.j, self.k)
