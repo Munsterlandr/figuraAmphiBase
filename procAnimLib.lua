@@ -22,19 +22,6 @@ end
 
 
 
--- Global Rotation Helper
-GlobalRotter = {versor = Quaternion.new(1,0,0,0)}
-function GlobalRotter.new(rootPart)
-    local o = {}
-    o.versor = Quaternion.byTaitBryan(rootPart:getRot())
-    setmetatable(o, GlobalRotter)
-    return o
-end function GlobalRotter:getChild(childPart)
-end function GlobalRotter:globalizeAngle(angle)
-end
-GlobalRotter.__index = GlobalRotter
-
-
 
 -- SmoothVal
 SmoothVal = {}
@@ -126,6 +113,9 @@ end function PartData:potency(val)
 end
 PartData.__index = PartData
 
+
+
+-- PoseData
 PoseData = {
     camPos = vec(0,0,0),
     camRot = vec(0,0,0)
@@ -184,20 +174,10 @@ end function PoseData:checkPart(part)
         return self.parts[part]
     end
 end
-function PoseData:getCumulativeRot(part)
-    local rot = vec(0,0,0)
 
-    repeat
-      if self.parts[part] ~= nil then
-        rot = rot + self.parts[part].rot
-      end
-      part = part:getParent()
-    until(part == nil)
-    return rot
-end function PoseData:globallyRotate(part, by)
-    self:part(part).rot = self:checkPart(part).rot + QoL.getGlobalRotation(self:getCumulativeRot(part), by)
-end
 
+
+-- animator
 Animator = {}
 function Animator:tick()
 end function Animator:render(delta, netPose)
@@ -219,3 +199,39 @@ end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
 ]]
+
+
+
+-- globalRotationHelper --
+GlobalRotter = {versor = Quaternion.new(1,0,0,0)}
+function GlobalRotter.new(pose, initialPart)
+    local o = {}
+    o.pose = pose
+    o.part = initialPart
+    o.versor = Quaternion.byTaitBryan(pose:checkPart(initialPart).rot)
+    setmetatable(o, {__index = GlobalRotter})
+    return o
+end function GlobalRotter:stepTo(part) -- returns self for chaining
+    if self.part == part:getParent() then
+        self.part = part
+        self.versor = self.versor * Quaternion.byTaitBryan(self.pose:checkPart(part).rot)
+        return self
+    else
+        print("Given part is not child of current part.")
+    end
+end function GlobalRotter:splitTo(part)
+    if part:getParent() == self.part then
+        local splitRotter = GlobalRotter.new(self.pose, part)
+        splitRotter.versor = self.versor * splitRotter.versor
+        return splitRotter
+    else
+        print("the given part is not a child of the current part.")
+    end
+end function GlobalRotter:rotBy(rot) -- returns self for chaining
+    local rotVersor = Quaternion.byTaitBryan(rot)
+    local oldGlobalRot = self.versor:toTaitBryan()
+    self.versor = self.versor * rotVersor
+    self.pose:part(self.part).rot = self.pose:part(self.part).rot + (self.versor:toTaitBryan() - oldGlobalRot)
+    return self
+end
+

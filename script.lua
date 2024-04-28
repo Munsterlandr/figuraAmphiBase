@@ -103,15 +103,20 @@ end, function (self, delta, pose) -- render
   local headRot = vanilla_model.HEAD:getOriginRot()
   headRot.y = (headRot.y + 180)%360 - 180
 
-  --[[pose:globallyRotate(models.amphi.root.Amphi.Hips, headRot / -3)
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.TailBase, headRot/-3 * vec(-1,1,1))
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.TailBase.TailTip, headRot/-3 * vec(-1,1,1))
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.Legs, headRot/3 * vec(1,0,1))
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist, headRot / 3)
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders, headRot / 3)
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms, headRot / -3 * vec(1,0,1))
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck, headRot / 3)
-  pose:globallyRotate(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head, headRot / 3)--]]
+  local posLookAdjust = headRot/3
+  local negLookAdjust = headRot/-3
+  local tailRotAmount = negLookAdjust * vec(-1,1,1)
+
+  --[[local rotHelper = GlobalRotter.new(pose, models.amphi.root.Amphi)
+  rotHelper:stepTo(models.amphi.root.Amphi.Hips):rotBy(negLookAdjust)
+  :splitTo(models.amphi.root.Amphi.Hips.Legs):rotBy(posLookAdjust * vec(1,0,1))
+  rotHelper:splitTo(models.amphi.root.Amphi.Hips.TailBase):rotBy(tailRotAmount)
+  :stepTo(models.amphi.root.Amphi.Hips.TailBase.TailTip):rotBy(tailRotAmount)
+  rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist):rotBy(posLookAdjust)
+  :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders):rotBy(posLookAdjust)
+  rotHelper:splitTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms):rotBy(negLookAdjust * vec(1,0,1))
+  rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck):rotBy(posLookAdjust)
+  :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head):rotBy(posLookAdjust) --]]
 end)
 
 PlayerLook = Animator:new(function (self) -- init
