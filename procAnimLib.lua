@@ -18,8 +18,33 @@ end function QoL.listContainsVal(list, val)
         end
     end
     return hasVal
-end
+end function QoL.matrixToAngles(matrix)
 
+    local radV = math.asin(-matrix[3][1])
+    local cosV = math.cos(radV)
+
+    local sinU = matrix[3][2]/cosV
+    local radU
+    if math.abs(sinU) == 1 then
+        radU = math.asin(sinU)
+    else
+        radU = math.atan2(sinU, matrix[3][3]/cosV)
+    end
+
+    local sinW = matrix[2][1]/cosV
+    local radW
+    if math.abs(sinW) == 1 then
+        radW = math.asin(sinW)
+    else
+        radW = math.atan2(sinW, matrix[1][1]/cosV)
+    end
+
+    return vec(
+        -math.deg(radV),
+        math.deg(radU),
+        -math.deg(radW)
+    )
+end--]]
 
 
 
@@ -174,6 +199,21 @@ end function PoseData:checkPart(part)
         return self.parts[part]
     end
 end
+function PoseData:apply()
+    renderer:setOffsetCameraRot(self.camRot)
+    renderer:setEyeOffset(self.camPos)
+    renderer:setCameraPos(self.camPos)
+    for part,data in pairs(self.parts) do
+        part:setRot(data.rot)
+        part:setPos(data.pos)
+        part:setScale(data.scale)
+        part:setOffsetPivot(data.pivot)
+    end
+end
+function PoseData:globallyRot(part,rot)
+    part:setRot(self:part(part).rot)
+    
+end
 
 
 
@@ -232,6 +272,9 @@ end function GlobalRotter:rotBy(rot) -- returns self for chaining
     local oldGlobalRot = self.versor:toTaitBryan()
     self.versor = self.versor * rotVersor
     self.pose:part(self.part).rot = self.pose:part(self.part).rot + (self.versor:toTaitBryan() - oldGlobalRot)
+
+    --print(rotVersor:toTaitBryan())
+
     return self
 end
 

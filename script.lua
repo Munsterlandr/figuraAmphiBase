@@ -117,6 +117,8 @@ end, function (self, delta, pose) -- render
   rotHelper:splitTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms):rotBy(negLookAdjust * vec(1,0,1))
   rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck):rotBy(posLookAdjust)
   :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head):rotBy(posLookAdjust) --]]
+
+  
 end)
 
 PlayerLook = Animator:new(function (self) -- init
@@ -300,13 +302,5 @@ function events.render(delta, context)
   finalPose = Tf:render(delta, finalPose, amphiPose, humanPose)
 
   -- apply finalPose to being
-  renderer:setOffsetCameraRot(finalPose.camRot)
-  renderer:setEyeOffset(finalPose.camPos)
-  renderer:setCameraPos(finalPose.camPos)
-  for part, data in pairs(finalPose.parts) do
-    part:setRot(data.rot)
-    part:setPos(data.pos)
-    part:setScale(data.scale)
-    part:setOffsetPivot(data.pivot)
-  end
+  finalPose:apply()
 end

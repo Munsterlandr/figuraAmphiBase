@@ -10,19 +10,19 @@ function Quaternion.new(n, i, j, k)
     setmetatable(o, Quaternion)
     return o
 end function Quaternion.byAxisAngle(theta, axis)
-    local thetaRad = math.rad(theta)
-    local sinTheta = math.sin(thetaRad/2)
-    return Quaternion.new(math.cos(thetaRad/2), axis.x * sinTheta, axis.y * sinTheta, axis.z * sinTheta)
+    local thetaRad = math.rad(theta)/2
+    local sinTheta = math.sin(thetaRad)
+    return Quaternion.new(math.cos(thetaRad), axis.x * sinTheta, axis.y * sinTheta, axis.z * sinTheta)
 end function Quaternion.byTaitBryan(vect)
-    local halfPitch = math.rad(vect.x)/2
-    local sinHalfPitch = math.sin(halfPitch)
-    local cosHalfPitch = math.cos(halfPitch)
-    local halfYaw = math.rad(vect.y)/2
-    local sinHalfYaw = math.sin(halfYaw)
-    local cosHalfYaw = math.cos(halfYaw)
     local halfRoll = math.rad(vect.z)/2
     local sinHalfRoll = math.sin(halfRoll)
     local cosHalfRoll = math.cos(halfRoll)
+    local halfYaw = math.rad(vect.y)/2
+    local sinHalfYaw = math.sin(halfYaw)
+    local cosHalfYaw = math.cos(halfYaw)
+    local halfPitch = math.rad(vect.x)/2
+    local sinHalfPitch = math.sin(halfPitch)
+    local cosHalfPitch = math.cos(halfPitch)
 
     return Quaternion.new(
         cosHalfPitch*cosHalfYaw*cosHalfRoll + sinHalfPitch*sinHalfYaw*sinHalfRoll,
@@ -49,11 +49,11 @@ function Quaternion:toAxisAngle()
     local axis = vec(self.i, self.j, self.k)/sinAngle
     return angle, axis
 end function Quaternion:toTaitBryan()
-    local pitch
-    local yaw -- this is the only non-locking term
     local roll
+    local yaw -- this is the only non-locking term
+    local pitch
 
-    yaw = math.deg( math.asin(2*(self.n*self.i + self.j*self.k)) )
+    yaw = math.deg( math.asin(2*(self.n*self.i - self.j*self.k)) )
     if math.abs(yaw) == 90 then
         pitch = 0
         roll = -2*math.deg( math.atan2(self.i, self.n) )
@@ -75,7 +75,7 @@ end function Quaternion:invert()
     self.j = -self.j
     self.k = -self.k
 end
-function Quaternion.__tostring(self)
+function Quaternion:__tostring()
     local str = ""..self.n
     if self.i < 0 then
         str = str.."-i"
@@ -105,8 +105,16 @@ end function Quaternion.__mul(a, b)
 end
 Quaternion.__index = Quaternion
 
---[[ testing
+-- testing
+--[[local function makeVersorButFancy(rot)
+    local versor = Quaternion.byAxisAngle(rot.x, vec(1,0,0))
+    versor = versor * Quaternion.byAxisAngle(rot.y, vec(0,1,0))
+    versor = versor * Quaternion.byAxisAngle(rot.z, vec(0,0,1))
+    return versor
+end
+
 local testBryanTait = vec(-81,80, 23)
 local testVersor = Quaternion.byTaitBryan(testBryanTait)
-print(testVersor:toAxisAngle())
+local testFancyVersor = makeVersorButFancy(testBryanTait)
+print(testFancyVersor:toTaitBryan())
 print(testVersor:toTaitBryan()) --]]
