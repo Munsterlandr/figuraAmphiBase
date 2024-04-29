@@ -1,3 +1,7 @@
+require "quaternion"
+
+
+
 -- PartData
 PartData = {
     rot = vec(0,0,0),
