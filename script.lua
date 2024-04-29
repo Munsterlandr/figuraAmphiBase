@@ -109,7 +109,7 @@ end, function (self, delta, pose) -- render
 
   local rotHelper = GlobalRotter.new(pose, models.amphi.root.Amphi)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips):rotBy(negLookAdjust)
-  :splitTo(models.amphi.root.Amphi.Hips.Legs):rotBy(posLookAdjust * vec(1,0,1))
+  :splitTo(models.amphi.root.Amphi.Hips.Legs):rotBy(posLookAdjust * vec(1,-1,1))
   rotHelper:splitTo(models.amphi.root.Amphi.Hips.TailBase):rotBy(tailRotAmount)
   :stepTo(models.amphi.root.Amphi.Hips.TailBase.TailTip):rotBy(tailRotAmount)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist):rotBy(posLookAdjust)
