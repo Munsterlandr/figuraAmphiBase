@@ -14,21 +14,21 @@ end function Quaternion.byAxisAngle(theta, axis)
     local sinTheta = math.sin(thetaRad)
     return Quaternion.new(math.cos(thetaRad), axis.x * sinTheta, axis.y * sinTheta, axis.z * sinTheta)
 end function Quaternion.byTaitBryan(vect)
-    local halfRoll = math.rad(vect.z)/2
-    local sinHalfRoll = math.sin(halfRoll)
-    local cosHalfRoll = math.cos(halfRoll)
-    local halfYaw = math.rad(vect.y)/2
-    local sinHalfYaw = math.sin(halfYaw)
-    local cosHalfYaw = math.cos(halfYaw)
-    local halfPitch = math.rad(vect.x)/2
-    local sinHalfPitch = math.sin(halfPitch)
-    local cosHalfPitch = math.cos(halfPitch)
+    local halfU = math.rad(vect.x)/2
+    local cU2 = math.cos(halfU)
+    local sU2 = math.sin(halfU)
+    local halfV = math.rad(vect.y)/2
+    local cV2 = math.cos(halfV)
+    local sV2 = math.sin(halfV)
+    local halfW = math.rad(vect.z)/2
+    local cW2 = math.cos(halfW)
+    local sW2 = math.sin(halfW)
 
     return Quaternion.new(
-        cosHalfPitch*cosHalfYaw*cosHalfRoll + sinHalfPitch*sinHalfYaw*sinHalfRoll,
-        sinHalfPitch*cosHalfYaw*cosHalfRoll - cosHalfPitch*sinHalfYaw*sinHalfRoll,
-        cosHalfPitch*sinHalfYaw*cosHalfRoll + sinHalfPitch*cosHalfYaw*sinHalfRoll,
-        cosHalfPitch*cosHalfYaw*sinHalfRoll - sinHalfPitch*sinHalfYaw*cosHalfRoll
+        cU2*cV2*cW2+sU2*sV2*sW2,
+        sU2*cV2*cW2+cU2*sV2*sW2,
+        cU2*sV2*cW2-sU2*cV2*sW2,
+        cU2*cV2*sW2-sU2*sV2*cW2
     )
 end
 function Quaternion:copy()
@@ -49,52 +49,49 @@ function Quaternion:toAxisAngle()
     local axis = vec(self.i, self.j, self.k)/sinAngle
     return angle, axis
 end function Quaternion:toTaitBryan()
-    local roll
-    local yaw -- this is the only non-locking term
-    local pitch
+    local u
+    local v -- this is the only non-locking term
+    local w
 
-    yaw = math.deg( math.asin(2*(self.n*self.i - self.j*self.k)) )
-    if math.abs(yaw) == 90 then
-        pitch = 0
-        roll = -2*math.deg( math.atan2(self.i, self.n) )
-        if yaw == -90 then
-            roll = -roll
-        end
+    v = math.deg( math.asin(2*(self.n*self.j - self.i*self.k)) )
+    if 90 == v then
+        u = 0
+        w = math.deg( -2*math.atan2(self.i,self.n) )
+    elseif -90 == v then
+        u = 0
+        w = math.deg( 2*math.atan2(self.i,self.n) )
     else
-        -- define pitch
-        pitch = math.deg( math.atan2(2*(self.n*self.i + self.j*self.k), self.n^2 - self.i^2 - self.j^2 + self.k^2) )
-
-        -- define roll
-        roll = math.deg( math.atan2(2*(self.n*self.k - self.i*self.j), self.n^2+self.i^2-self.j^2-self.k^2) )
+        u = math.deg( math.atan2(2*(self.n*self.i+self.j*self.k), 1-2*(self.i^2+self.j^2)) )
+        w = math.deg( math.atan2(2*(self.n*self.k+self.i*self.j), 1-2*(self.j^2+self.k^2)) )
     end
 
     -- return the thing
-    return vec(pitch, yaw, roll)
+    return vec(u, v, w)
 end function Quaternion:invert()
     self.i = -self.i
     self.j = -self.j
     self.k = -self.k
 end
 function Quaternion:__tostring()
-    local str = ""..self.n
+    local text = ""..self.n
     if self.i < 0 then
-        str = str.."-i"
+        text = text.."-i"
     else
-        str = str.."+i"
+        text = text.."+i"
     end
-    str = str..math.abs(self.i)
+    text = text..math.abs(self.i)
     if self.j < 0 then
-        str = str.."-j"
+        text = text.."-j"
     else
-        str = str.."+j"
+        text = text.."+j"
     end
-    str = str..math.abs(self.j)
+    text = text..math.abs(self.j)
     if self.k < 0 then
-        str = str.."-k"
+        text = text.."-k"
     else
-        str = str.."+k"
+        text = text.."+k"
     end
-    return str..math.abs(self.k)
+    return text..math.abs(self.k)
 end function Quaternion.__mul(a, b)
     local c = Quaternion.new(0,0,0,0)
     c.n = (a.n * b.n) - (a.i * b.i) - (a.j * b.j) - (a.k * b.k)
@@ -106,7 +103,7 @@ end
 Quaternion.__index = Quaternion
 
 -- testing
---[[local function makeVersorButFancy(rot)
+local function makeVersorButFancy(rot)
     local versor = Quaternion.byAxisAngle(rot.x, vec(1,0,0))
     versor = versor * Quaternion.byAxisAngle(rot.y, vec(0,1,0))
     versor = versor * Quaternion.byAxisAngle(rot.z, vec(0,0,1))

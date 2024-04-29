@@ -270,8 +270,8 @@ end function GlobalRotter:splitTo(part)
 end function GlobalRotter:rotBy(rot) -- returns self for chaining
     local rotVersor = Quaternion.byTaitBryan(rot)
     local oldGlobalRot = self.versor:toTaitBryan()
-    self.versor = self.versor * rotVersor
-    self.pose:part(self.part).rot = self.pose:part(self.part).rot + (self.versor:toTaitBryan() - oldGlobalRot)
+    self.versor = rotVersor * self.versor
+    self.pose:part(self.part).rot = self.pose:checkPart(self.part).rot + (self.versor:toTaitBryan() - oldGlobalRot)
 
     --print(rotVersor:toTaitBryan())
 
