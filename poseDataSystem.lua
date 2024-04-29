@@ -1,45 +1,49 @@
+require "quaternion"
+
+
+
 -- PartData
 PartData = {
-    rot = vec(0,0,0),
+    rot = Quaternion.new(1,0,0,0),
     pos = vec(0,0,0),
     scale = vec(1,1,1),
     pivot = vec(0,0,0)
 }
-function PartData.__add(a, b)
-    local c = PartData:new()
-    c.rot = a.rot + b.rot
-    c.pos = a.pos + b.pos
-    c.scale = a.scale * b.scale
-    c.pivot = a.pivot + b.pivot
-    return c
-end function PartData.__mul(a, b)
-    local c = PartData:new()
-    c.rot = a.rot * b
-    c.pos = a.pos * b
-    -- ignore scale
-    c.pivot = a.pivot * b
-    return c
-end
-function PartData:new()
+
+function PartData.new()
     local o = {}
     setmetatable(o, PartData)
     return o
-end function PartData:copy()
+end
+function PartData:copy()
     local new = PartData:new()
-    for key, value in pairs(self) do
-        new[key] = value
-    end
+    new.rot = self.rot:copy()
+    new.pos = self.pos:copy()
+    new.scale = self.scale:copy()
+    new.pivot = self.pivot:copy()
     return new
 end function PartData:add(data)
-    self.rot = self.rot + data.rot
+    self.rot = self.rot * data.rot
     self.pos = self.pos + data.pos
     self.scale = self.scale * data.scale
     self.pivot = self.pivot + data.pivot
 end function PartData:potency(val)
-    self.rot = self.rot * val
+    -- interpolate between no rotation and current rotation while keeping Quaternion length 1
+    
+    -- the other stuff's straightforward
     self.pos = self.pos * val
     self.scale = self.scale * val + (self.scale*(1-val))
     self.pivot = self.pivot * val
+end
+function PartData.__add(a, b)
+    local c = PartData.new()
+    c.rot = a.rot * b.rot
+    c.pos = a.pos + b.pos
+    c.scale = a.scale * b.scale
+    c.pivot = a.pivot + b.pivot
+    return c
+end function PartData.__mul(a,b)
+    local c = PartData.new()
 end
 PartData.__index = PartData
 
