@@ -115,10 +115,6 @@ function PoseData:apply()
         part:setOffsetPivot(data.pivot)
     end
 end
-function PoseData:globallyRot(part,rot)
-    part:setRot(self:part(part).rot)
-    
-end
 
 
 
