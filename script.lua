@@ -10,15 +10,15 @@ local currentPose
 
 -- Form PoseDatas --
 
-AmphiForm = PoseData:new()
+AmphiForm = PoseData.new()
 AmphiForm:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm).pos = vec(2,0,0)
 AmphiForm:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm).pos = vec(-2,0,0)
 
-HumanForm = PoseData:new() -- if you've added extra geometry please edit this to have it tuck it away!
+HumanForm = PoseData.new() -- if you've added extra geometry please edit this to have it tuck it away!
 
 
 -- goop syncer --
-Goop = DataAnimator:new(function (self) -- init
+Goop = DataAnimator.new(function (self) -- init
   self.goopening = SmoothVal:new(0, 0.3)
 end, function (self) -- tick
   self.goopening:advance()
@@ -42,7 +42,7 @@ end)
 
 
 -- transformation system --
-Tf = DataAnimator:new(function (self) -- init
+Tf = DataAnimator.new(function (self) -- init
   self.isTransforming = false
   self.isAmphi = true
   self.amphinity = SmoothVal:new(1, 0.15)
@@ -78,7 +78,7 @@ vanilla_model.CAPE:setVisible(false)
 
 
 -- neck pose adjuster --
-NeckPoser = DataAnimator:new(function (self) -- init
+NeckPoser = DataAnimator.new(function (self) -- init
   self.neckAngle = SmoothVal:new(vec(30,0,0), 0.3)
 end, function (self) -- tick
   if player:isSprinting() then
@@ -95,7 +95,7 @@ end)
 
 
 -- look around --
-AmphiLook = DataAnimator:new(function (self) -- init
+AmphiLook = DataAnimator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
   local headRot = vanilla_model.HEAD:getOriginRot()
@@ -121,7 +121,7 @@ end, function (self, delta, pose) -- render
 
 end)
 
-PlayerLook = DataAnimator:new(function (self) -- init
+PlayerLook = DataAnimator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
   
@@ -130,28 +130,28 @@ end)
 
 
 -- standing system --
-StandUp = DataAnimator:new(function (self) -- init
+StandUp = DataAnimator.new(function (self) -- init
   self.standingness = SmoothVal:new(0, 0.2)
   self.tailAdjustness = SmoothVal:new(0,0.2)
 
   self.shouldStand = false
 
-  self.standingPose = PoseData:new()
-  self.standingPose:part(models.amphi.root.Amphi.Hips).rot = vec(65,0,0)
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Legs).rot = vec(-65,0,0)
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist).rot = vec(10,0,0)
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders).rot = vec(10,0,0)
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).rot = vec(-85,0,0)
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot = vec(-10,0,0)
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot = vec(-75,0,0)
+  self.standingPose = PoseData.new()
+  self.standingPose:part(models.amphi.root.Amphi.Hips).rot:set(vec(65,0,0))
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Legs).rot:set(vec(-65,0,0))
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist).rot:set(vec(10,0,0))
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders).rot:set(vec(10,0,0))
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).rot:set(vec(-85,0,0))
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot:set(vec(-10,0,0))
+  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot:set(vec(-75,0,0))
 
-  self.tailAdjustPose = PoseData:new()
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips).rot = vec(-20,0,0)
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.TailBase).rot = vec(-25,0,0)
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot = vec(-25,0,0)
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Legs).rot = vec(20,0,0)
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).rot = vec(20,0,0)
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot = vec(20,0,0)
+  self.tailAdjustPose = PoseData.new()
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips).rot:set(vec(-20,0,0))
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.TailBase).rot:set(vec(-25,0,0))
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot:set(vec(-25,0,0))
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Legs).rot:set(vec(20,0,0))
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).rot:set(vec(20,0,0))
+  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot:set(vec(20,0,0))
 
 end, function (self) -- tick
   if self:isStanding() then
@@ -209,7 +209,7 @@ StandUp.keybind.release = pings.standDown
 
 
 -- cam handler --
-Ducking = DataAnimator:new(function (self) -- init
+Ducking = DataAnimator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
@@ -217,7 +217,7 @@ end)
 
 
 -- wagger --
-Wagger = DataAnimator:new(function (self) -- init
+Wagger = DataAnimator.new(function (self) -- init
   self.isWagging = false
   self.tailYaw = Oscillator:new(2,0.1,120,0.2)
 end, function (self) -- tick
@@ -242,7 +242,7 @@ end
 
 
 -- sleep pose --
-Sleep = DataAnimator:new(function (self) -- init
+Sleep = DataAnimator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
@@ -310,13 +310,13 @@ end
 --"delta" is the percentage between the last and the next tick (as a decimal value, 0.0 to 1.0)
 --"context" is a string that tells from where this render event was called (the paperdoll, gui, player render, first person)
 function events.render(delta, context)
-  local finalPose = PoseData:new()
+  local finalPose = PoseData.new()
   finalPose:part(models.amphi).pos = vec(0,-12,-13)
 
   -- apply the functions
   local amphiPose
   if Tf.isAmphi == true then
-    amphiPose = PoseData:new() + AmphiForm
+    amphiPose = PoseData.new() + AmphiForm
     Wagger:render(delta,amphiPose)
     if currentPose == "SLEEPING" then
     else
@@ -327,7 +327,7 @@ function events.render(delta, context)
   end
   local humanPose
   if Tf.isTransforming or not Tf.isAmphi then
-    humanPose = PoseData:new() + HumanForm
+    humanPose = PoseData.new() + HumanForm
 
     PlayerLook:render(delta, humanPose)
   end
