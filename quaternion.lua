@@ -1,7 +1,7 @@
 -- versors are unit quaternions, ie of length 1. They're used for rotations in computer graphics n such because they're more efficient to compute than matrices.
 
 Quaternion = {}
-function Quaternion.new(n, i, j, k)
+function Quaternion.new(n, i, j, k) -- base constructor
     local o = {}
     o.n = n
     o.i = i
@@ -9,7 +9,8 @@ function Quaternion.new(n, i, j, k)
     o.k = k
     setmetatable(o, Quaternion)
     return o
-end function Quaternion.byAxisAngle(theta, axis)
+end
+function Quaternion.byAxisAngle(theta, axis) -- conversions to Versor
     local thetaRad = math.rad(theta)/2
     local sinTheta = math.sin(thetaRad)
     return Quaternion.new(math.cos(thetaRad), axis.x * sinTheta, axis.y * sinTheta, axis.z * sinTheta)
@@ -31,18 +32,27 @@ end function Quaternion.byTaitBryan(vect)
         cU2*cV2*sW2-sU2*sV2*cW2
     )
 end
-function Quaternion:copy()
-    return Quaternion.new(self.n, self.i, self.j, self.k)
+function Quaternion.byPoint(point) -- position quaternion
+    return Quaternion.new(0,point.x,point.y,point.z)
 end
-function Quaternion:toVec4()
-    return vec(self.i,self.j,self.k, self.n)
+function Quaternion:copy() -- basic functions
+    return Quaternion.new(self.n, self.i, self.j, self.k)
 end function Quaternion:getLength()
     return math.sqrt(self.n^2 + self.i^2 + self.j^2 + self.k^2)
 end function Quaternion:getAngle()
     return math.deg(math.acos(self.n))*2
+end function Quaternion:inverse()
+    return Quaternion.new(
+        self.n,
+        -self.i,
+        -self.j,
+        -self.k
+    )
 end
--- Quaternion to other rotation functions, currently a bit borked
-function Quaternion:toAxisAngle()
+function Quaternion:toVec4()
+    return vec(self.i,self.j,self.k, self.n)
+end
+function Quaternion:toAxisAngle() -- Quaternion to other rotation methods
     local radAngle = math.acos(self.n)
     local sinAngle = math.sin(radAngle)
     local angle = math.deg(radAngle) * 2
@@ -67,15 +77,13 @@ end function Quaternion:toTaitBryan()
 
     -- return the thing
     return vec(u, v, w)
-end function Quaternion:inverse()
-    return Quaternion.new(
-        self.n,
-        -self.i,
-        -self.j,
-        -self.k
-    )
 end
-function Quaternion:__tostring()
+function Quaternion:rotLocationQuaternion(position) -- Versor functions
+    return self * position * self:inverse()
+end function Quaternion:rotPoint(point) 
+    return self:rotLocationQuaternion(Quaternion.byPoint(point)):toTaitBryan()
+end
+function Quaternion:__tostring() -- metamethods
     local text = ""..self.n
     if self.i < 0 then
         text = text.."-i"
@@ -107,15 +115,7 @@ end
 Quaternion.__index = Quaternion
 
 -- testing
---[[local function makeVersorButFancy(rot)
-    local versor = Quaternion.byAxisAngle(rot.x, vec(1,0,0))
-    versor = versor * Quaternion.byAxisAngle(rot.y, vec(0,1,0))
-    versor = versor * Quaternion.byAxisAngle(rot.z, vec(0,0,1))
-    return versor
-end
-
-local testBryanTait = vec(-81,80, 23)
-local testVersor = Quaternion.byTaitBryan(testBryanTait)
-local testFancyVersor = makeVersorButFancy(testBryanTait)
-print(testFancyVersor:toTaitBryan())
-print(testVersor:toTaitBryan()) --]]
+--[[local testPosQuat = Quaternion.new(0,1,0,0)
+local versor1 = Quaternion.byTaitBryan(vec(90,0,0))
+local versor2 = Quaternion.byTaitBryan(vec(0,90,0))
+--]]

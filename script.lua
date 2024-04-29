@@ -88,10 +88,7 @@ end, function (self) -- tick
 
   self.neckAngle:advance()
 end, function (self, delta, pose) -- render
-  local neckAngle = self.neckAngle:getAt(delta)
-
-  pose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot + neckAngle
-  pose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot - neckAngle
+  -- really happens in AmphiLook
 end)
 
 
@@ -107,16 +104,18 @@ end, function (self, delta, pose) -- render
   local negLookAdjust = headRot/-3
   local tailRotAmount = negLookAdjust * vec(-1,1,1)
 
+  local neckRot = NeckPoser.neckAngle:getAt(delta)
+
   local rotHelper = GlobalRotter.new(pose, models.amphi.root.Amphi)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips):rotBy(negLookAdjust)
-  :splitTo(models.amphi.root.Amphi.Hips.Legs):rotBy(posLookAdjust * vec(1,-1,1))
+  :splitTo(models.amphi.root.Amphi.Hips.Legs):rotBy(posLookAdjust * vec(1,0,1))
   rotHelper:splitTo(models.amphi.root.Amphi.Hips.TailBase):rotBy(tailRotAmount)
   :stepTo(models.amphi.root.Amphi.Hips.TailBase.TailTip):rotBy(tailRotAmount)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist):rotBy(posLookAdjust)
   :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders):rotBy(posLookAdjust)
   rotHelper:splitTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms):rotBy(negLookAdjust * vec(1,0,1))
-  rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck):rotBy(posLookAdjust)
-  :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head):rotBy(posLookAdjust) --]]
+  rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck):rotBy(posLookAdjust + neckRot)
+  :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head):rotBy(posLookAdjust - neckRot) --]]
 
 
 end)
@@ -284,9 +283,9 @@ function events.render(delta, context)
   local amphiPose
   if Tf.isAmphi == true then
     amphiPose = PoseData:new() + AmphiForm
-    NeckPoser:render(delta, amphiPose)
     StandUp:render(delta, amphiPose)
     AmphiLook:render(delta, amphiPose)
+    NeckPoser:render(delta, amphiPose)
   end
   local humanPose
   if Tf.isTransforming or not Tf.isAmphi then

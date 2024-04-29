@@ -243,7 +243,7 @@ end)
 
 
 -- globalRotationHelper --
-GlobalRotter = {versor = Quaternion.new(1,0,0,0)}
+GlobalRotter = {versor = Quaternion.new(1,0,0,0), unparentVersor = Quaternion.new(1,0,0,0)}
 function GlobalRotter.new(pose, initialPart)
     local o = {}
     o.pose = pose
@@ -254,6 +254,7 @@ function GlobalRotter.new(pose, initialPart)
 end function GlobalRotter:stepTo(part) -- returns self for chaining
     if self.part == part:getParent() then
         self.part = part
+        self.unparentVersor = self.versor:inverse()
         self.versor = Quaternion.byTaitBryan(self.pose:checkPart(part).rot) * self.versor
         return self
     else
@@ -262,6 +263,7 @@ end function GlobalRotter:stepTo(part) -- returns self for chaining
 end function GlobalRotter:splitTo(part)
     if part:getParent() == self.part then
         local splitRotter = GlobalRotter.new(self.pose, part)
+        splitRotter.unparentVersor = self.versor:inverse()
         splitRotter.versor = splitRotter.versor * self.versor
         return splitRotter
     else
@@ -269,9 +271,8 @@ end function GlobalRotter:splitTo(part)
     end
 end function GlobalRotter:rotBy(rot) -- returns self for chaining
     local rotVersor = Quaternion.byTaitBryan(rot)
-    local oldGlobalVersor = self.versor:inverse()
-    self.versor = rotVersor * self.versor
-    self.pose:part(self.part).rot = self.pose:checkPart(self.part).rot + (oldGlobalVersor*self.versor):toTaitBryan()
+    self.versor = self.versor * rotVersor
+    self.pose:part(self.part).rot = (self.unparentVersor*self.versor):toTaitBryan()
 
     --print(rotVersor:toTaitBryan())
 
