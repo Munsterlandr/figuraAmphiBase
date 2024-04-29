@@ -3,31 +3,40 @@ require "quaternion"
 
 
 -- PartData
-PartData = {
+PartData = { __index = {
     rot = Quaternion.new(1,0,0,0),
     pos = vec(0,0,0),
     scale = vec(1,1,1),
     pivot = vec(0,0,0)
-}
-
+}}
+-- constructor
 function PartData.new()
     local o = {}
     setmetatable(o, PartData)
     return o
 end
-function PartData:copy()
+-- methods
+function     PartData.__index:copy()
     local new = PartData:new()
     new.rot = self.rot:copy()
     new.pos = self.pos:copy()
     new.scale = self.scale:copy()
     new.pivot = self.pivot:copy()
     return new
-end function PartData:add(data)
+end function PartData.__index:add(data)
     self.rot = self.rot * data.rot
     self.pos = self.pos + data.pos
     self.scale = self.scale * data.scale
     self.pivot = self.pivot + data.pivot
-end function PartData:potency(val)
+end function PartData.__index:setRot(rot)
+    self.rot = Quaternion.byTaitBryan(rot)
+end function PartData.__index:addRot(rot)
+    self:addVersor(Quaternion.byTaitBryan(rot))
+end function PartData.__index:addVersor(versor)
+    self.rot = self.rot * versor
+end function PartData.__index:getRot()
+    return self.rot:toTaitBryan()
+end function PartData.__index:potency(val)
     -- interpolate between no rotation and current rotation while keeping Quaternion length 1
     
     -- the other stuff's straightforward
@@ -35,6 +44,7 @@ end function PartData:potency(val)
     self.scale = self.scale * val + (self.scale*(1-val))
     self.pivot = self.pivot * val
 end
+-- metamethods
 function PartData.__add(a, b)
     local c = PartData.new()
     c.rot = a.rot * b.rot
@@ -42,10 +52,7 @@ function PartData.__add(a, b)
     c.scale = a.scale * b.scale
     c.pivot = a.pivot + b.pivot
     return c
-end function PartData.__mul(a,b)
-    local c = PartData.new()
 end
-PartData.__index = PartData
 
 
 
