@@ -254,7 +254,7 @@ function GlobalRotter.new(pose, initialPart)
 end function GlobalRotter:stepTo(part) -- returns self for chaining
     if self.part == part:getParent() then
         self.part = part
-        self.versor = self.versor * Quaternion.byTaitBryan(self.pose:checkPart(part).rot)
+        self.versor = Quaternion.byTaitBryan(self.pose:checkPart(part).rot) * self.versor
         return self
     else
         print("Given part is not child of current part.")
@@ -262,16 +262,16 @@ end function GlobalRotter:stepTo(part) -- returns self for chaining
 end function GlobalRotter:splitTo(part)
     if part:getParent() == self.part then
         local splitRotter = GlobalRotter.new(self.pose, part)
-        splitRotter.versor = self.versor * splitRotter.versor
+        splitRotter.versor = splitRotter.versor * self.versor
         return splitRotter
     else
         print("the given part is not a child of the current part.")
     end
 end function GlobalRotter:rotBy(rot) -- returns self for chaining
     local rotVersor = Quaternion.byTaitBryan(rot)
-    local oldGlobalRot = self.versor:toTaitBryan()
+    local oldGlobalVersor = self.versor:inverse()
     self.versor = rotVersor * self.versor
-    self.pose:part(self.part).rot = self.pose:checkPart(self.part).rot + (self.versor:toTaitBryan() - oldGlobalRot)
+    self.pose:part(self.part).rot = self.pose:checkPart(self.part).rot + (oldGlobalVersor*self.versor):toTaitBryan()
 
     --print(rotVersor:toTaitBryan())
 

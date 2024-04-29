@@ -32,7 +32,7 @@ end function Quaternion.byTaitBryan(vect)
     )
 end
 function Quaternion:copy()
-    return Quaternion.new(self.real, self.i, self.j, self.k)
+    return Quaternion.new(self.n, self.i, self.j, self.k)
 end
 function Quaternion:toVec4()
     return vec(self.i,self.j,self.k, self.n)
@@ -67,10 +67,13 @@ end function Quaternion:toTaitBryan()
 
     -- return the thing
     return vec(u, v, w)
-end function Quaternion:invert()
-    self.i = -self.i
-    self.j = -self.j
-    self.k = -self.k
+end function Quaternion:inverse()
+    return Quaternion.new(
+        self.n,
+        -self.i,
+        -self.j,
+        -self.k
+    )
 end
 function Quaternion:__tostring()
     local text = ""..self.n
@@ -92,18 +95,19 @@ function Quaternion:__tostring()
         text = text.."+k"
     end
     return text..math.abs(self.k)
-end function Quaternion.__mul(a, b)
-    local c = Quaternion.new(0,0,0,0)
-    c.n = (a.n * b.n) - (a.i * b.i) - (a.j * b.j) - (a.k * b.k)
-    c.i = (a.n * b.i) + (a.i * b.n) + (a.j * b.k) - (a.k * b.j)
-    c.j = (a.n * b.j) - (a.i * b.k) + (a.j * b.n) + (a.k * b.i)
-    c.k = (a.n * b.k) + (a.i * b.j) - (a.j * b.i) + (a.k * b.n)
-    return c
+end
+function Quaternion.__mul(a, b)
+    return Quaternion.new(
+        (a.n * b.n) - (a.i * b.i) - (a.j * b.j) - (a.k * b.k),
+        (a.n * b.i) + (a.i * b.n) + (a.j * b.k) - (a.k * b.j),
+        (a.n * b.j) - (a.i * b.k) + (a.j * b.n) + (a.k * b.i),
+        (a.n * b.k) + (a.i * b.j) - (a.j * b.i) + (a.k * b.n)
+    )
 end
 Quaternion.__index = Quaternion
 
 -- testing
-local function makeVersorButFancy(rot)
+--[[local function makeVersorButFancy(rot)
     local versor = Quaternion.byAxisAngle(rot.x, vec(1,0,0))
     versor = versor * Quaternion.byAxisAngle(rot.y, vec(0,1,0))
     versor = versor * Quaternion.byAxisAngle(rot.z, vec(0,0,1))
