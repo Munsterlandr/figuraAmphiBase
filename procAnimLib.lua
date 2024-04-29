@@ -18,7 +18,7 @@ end function QoL.listContainsVal(list, val)
         end
     end
     return hasVal
-end function QoL.matrixToAngles(matrix)
+end --[[function QoL.matrixToAngles(matrix)
 
     local radV = math.asin(-matrix[3][1])
     local cosV = math.cos(radV)

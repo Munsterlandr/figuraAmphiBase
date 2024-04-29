@@ -215,6 +215,38 @@ end)
 
 
 
+-- wagger --
+Wagger = Animator:new(function (self) -- init
+  self.isWagging = false
+  self.tailYaw = Oscillator:new(2,0.1,120,0.2)
+end, function (self) -- tick
+  self.tailYaw:advance()
+end, function (self, delta, pose) -- render
+  local wagVec = vec(0,self.tailYaw:getAt(delta),0)
+  pose:part(models.amphi.root.Amphi.Hips.TailBase).rot = pose:checkPart(models.amphi.root.Amphi.Hips.TailBase).rot + wagVec
+  pose:part(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot = pose:checkPart(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot + wagVec
+end)
+
+function pings.toggleWag()
+  if Wagger.isWagging then
+    Wagger.tailYaw.advanceBy.target = math.pi / 60
+    Wagger.tailYaw.deviation.target = 2
+  else
+    Wagger.tailYaw.advanceBy.target = math.pi / 10
+    Wagger.tailYaw.deviation.target = 50
+  end
+  Wagger.isWagging = not Wagger.isWagging
+end
+
+
+
+-- sleep pose --
+Sleep = Animator:new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta, pose) -- render
+end)
+
+
 -- action wheel --
 ActionPages = {
   amphiMainPage = action_wheel:newPage(),
@@ -265,6 +297,7 @@ function events.tick()
   currentPose = player:getPose() -- it's more efficient
 
   if Tf.isAmphi then
+    Wagger:tick()
     NeckPoser:tick()
     StandUp:tick()
   end
@@ -283,9 +316,13 @@ function events.render(delta, context)
   local amphiPose
   if Tf.isAmphi == true then
     amphiPose = PoseData:new() + AmphiForm
-    StandUp:render(delta, amphiPose)
-    AmphiLook:render(delta, amphiPose)
-    NeckPoser:render(delta, amphiPose)
+    Wagger:render(delta,amphiPose)
+    if currentPose == "SLEEPING" then
+    else
+      StandUp:render(delta, amphiPose)
+      AmphiLook:render(delta, amphiPose)
+      NeckPoser:render(delta, amphiPose)
+    end
   end
   local humanPose
   if Tf.isTransforming or not Tf.isAmphi then
