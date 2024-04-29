@@ -1,4 +1,5 @@
 require "procAnimLib"
+require "poseDataSystem"
 
 
 
@@ -17,7 +18,7 @@ HumanForm = PoseData:new() -- if you've added extra geometry please edit this to
 
 
 -- goop syncer --
-Goop = Animator:new(function (self) -- init
+Goop = DataAnimator:new(function (self) -- init
   self.goopening = SmoothVal:new(0, 0.3)
 end, function (self) -- tick
   self.goopening:advance()
@@ -41,7 +42,7 @@ end)
 
 
 -- transformation system --
-Tf = Animator:new(function (self) -- init
+Tf = DataAnimator:new(function (self) -- init
   self.isTransforming = false
   self.isAmphi = true
   self.amphinity = SmoothVal:new(1, 0.15)
@@ -77,7 +78,7 @@ vanilla_model.CAPE:setVisible(false)
 
 
 -- neck pose adjuster --
-NeckPoser = Animator:new(function (self) -- init
+NeckPoser = DataAnimator:new(function (self) -- init
   self.neckAngle = SmoothVal:new(vec(30,0,0), 0.3)
 end, function (self) -- tick
   if player:isSprinting() then
@@ -94,7 +95,7 @@ end)
 
 
 -- look around --
-AmphiLook = Animator:new(function (self) -- init
+AmphiLook = DataAnimator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
   local headRot = vanilla_model.HEAD:getOriginRot()
@@ -120,7 +121,7 @@ end, function (self, delta, pose) -- render
 
 end)
 
-PlayerLook = Animator:new(function (self) -- init
+PlayerLook = DataAnimator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
   
@@ -129,7 +130,7 @@ end)
 
 
 -- standing system --
-StandUp = Animator:new(function (self) -- init
+StandUp = DataAnimator:new(function (self) -- init
   self.standingness = SmoothVal:new(0, 0.2)
   self.tailAdjustness = SmoothVal:new(0,0.2)
 
@@ -208,7 +209,7 @@ StandUp.keybind.release = pings.standDown
 
 
 -- cam handler --
-Ducking = Animator:new(function (self) -- init
+Ducking = DataAnimator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
@@ -216,7 +217,7 @@ end)
 
 
 -- wagger --
-Wagger = Animator:new(function (self) -- init
+Wagger = DataAnimator:new(function (self) -- init
   self.isWagging = false
   self.tailYaw = Oscillator:new(2,0.1,120,0.2)
 end, function (self) -- tick
@@ -241,7 +242,7 @@ end
 
 
 -- sleep pose --
-Sleep = Animator:new(function (self) -- init
+Sleep = DataAnimator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
