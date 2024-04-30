@@ -171,7 +171,8 @@ end, function (self) -- tick
 end, function (self, delta, pose) -- render
   local standingness = self.standingness:getAt(delta)
   local tailAdjustness = self.tailAdjustness:getAt(delta)
-  pose:add((self.standingPose * standingness) + (self.tailAdjustPose * tailAdjustness))
+  local emptyPose = PoseData.new()
+  pose:add(self.standingPose:interpolateTo(emptyPose, 1-standingness) + self.tailAdjustPose:interpolateTo(emptyPose, 1-tailAdjustness))
 end)
 function StandUp:isStanding()
   local mainUseAction = player:getHeldItem():getUseAction()
@@ -224,8 +225,8 @@ end, function (self) -- tick
   self.tailYaw:advance()
 end, function (self, delta, pose) -- render
   local wagVec = vec(0,self.tailYaw:getAt(delta),0)
-  pose:part(models.amphi.root.Amphi.Hips.TailBase).rot = pose:checkPart(models.amphi.root.Amphi.Hips.TailBase).rot + wagVec
-  pose:part(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot = pose:checkPart(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot + wagVec
+  pose:part(models.amphi.root.Amphi.Hips.TailBase).rot:add(wagVec)
+  pose:part(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot:add(wagVec)
 end)
 
 function pings.toggleWag()
@@ -246,6 +247,7 @@ Sleep = DataAnimator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
+
 
 
 -- action wheel --

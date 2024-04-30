@@ -44,7 +44,7 @@ end function Quaternion.__index:getLength()
     return math.sqrt(self.n^2 + self.i^2 + self.j^2 + self.k^2)
 end function Quaternion.__index:getAngle()
     return math.deg(math.acos(self.n))*2
-end function Quaternion:inverse()
+end function Quaternion.__index:inverse()
     return Quaternion.new(
         self.n,
         -self.i,
@@ -126,21 +126,43 @@ function Quaternion.__mul(a, b)
             (a.n * b.k) + (a.i * b.j) - (a.j * b.i) + (a.k * b.n)
         )
     end
+end function Quaternion.__div(a, b)
+    return Quaternion.new(
+        a.n / b,
+        a.i / b,
+        a.j / b,
+        a.k / b
+    )
+end function Quaternion.__add(a,b)
+    return Quaternion.new(
+        a.n + b.n,
+        a.i + b.i,
+        a.j + b.j,
+        a.k + b.k
+    )
 end
 
 
 
 -- Helper functions --
 Quaternions = {}
--- this code is a reimplementation of code from https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm. Please check them out if you wanna mess around with more funky geometry stuff.
 function Quaternions.slerp(a,b,progress)
     -- try to be lazy
     if a == b or progress == 0 then
         return a:copy()
     elseif progress == 1 then
         return b:copy()
-    else
-
+    else -- the meat of it
+        local dotProduct = a.n*b.n+a.i*b.i+a.j*b.j+a.k*b.k
+        local omega = math.acos(dotProduct)
+        local sinOmega = math.sqrt(1-dotProduct^2)
+        if sinOmega == 0 then
+            return a*(1-progress) + b*progress
+        elseif dotProduct < 0 then -- prevents it from going the long way
+            return a:inverse()*(math.sin((1-progress)*omega) / sinOmega) + b*(math.sin(progress*omega) / sinOmega)
+        else
+            return a*(math.sin((1-progress)*omega) / sinOmega) + b*(math.sin(progress*omega) / sinOmega)
+        end
     end
 end
 
