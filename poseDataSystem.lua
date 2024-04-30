@@ -1,5 +1,5 @@
 require "quaternion"
-
+require "procAnimLib"
 
 
 -- versor handler --
@@ -65,13 +65,12 @@ end function PartData.__index:addRot(rot)
     self:addVersor(Quaternion.byTaitBryan(rot))
 end function PartData.__index:getRot()
     return self.rot:toTaitBryan()
-end function PartData.__index:potency(val)
-    -- interpolate between no rotation and current rotation while keeping Quaternion length 1
-    
-    -- the other stuff's straightforward
-    self.pos = self.pos * val
-    self.scale = self.scale * val + (self.scale*(1-val))
-    self.pivot = self.pivot * val
+end function PartData.__index:interpolateTo(part, by)
+    local selfStrength = 1-by
+    -- interpolate rotation
+
+    -- everything else is straightforward
+
 end
 -- metamethods
 function PartData.__add(a, b)

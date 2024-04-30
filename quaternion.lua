@@ -1,6 +1,9 @@
--- versors are unit quaternions, ie of length 1. They're used for rotations in computer graphics n such because they're more efficient to compute than matrices.
 
-Quaternion = {}
+
+
+-- Quaternion --
+Quaternion = {__index = {}}
+-- constructors
 function Quaternion.new(n, i, j, k) -- base constructor
     local o = {}
     o.n = n
@@ -9,8 +12,7 @@ function Quaternion.new(n, i, j, k) -- base constructor
     o.k = k
     setmetatable(o, Quaternion)
     return o
-end
-function Quaternion.byAxisAngle(theta, axis) -- conversions to Versor
+end function Quaternion.byAxisAngle(theta, axis) -- conversions to Versor
     local thetaRad = math.rad(theta)/2
     local sinTheta = math.sin(thetaRad)
     return Quaternion.new(math.cos(thetaRad), axis.x * sinTheta, axis.y * sinTheta, axis.z * sinTheta)
@@ -35,11 +37,12 @@ end
 function Quaternion.byPoint(point) -- position quaternion
     return Quaternion.new(0,point.x,point.y,point.z)
 end
-function Quaternion:copy() -- basic functions
+-- methods
+function Quaternion.__index:copy() -- basic functions
     return Quaternion.new(self.n, self.i, self.j, self.k)
-end function Quaternion:getLength()
+end function Quaternion.__index:getLength()
     return math.sqrt(self.n^2 + self.i^2 + self.j^2 + self.k^2)
-end function Quaternion:getAngle()
+end function Quaternion.__index:getAngle()
     return math.deg(math.acos(self.n))*2
 end function Quaternion:inverse()
     return Quaternion.new(
@@ -49,16 +52,16 @@ end function Quaternion:inverse()
         -self.k
     )
 end
-function Quaternion:toVec4()
+function Quaternion.__index:toVec4()
     return vec(self.i,self.j,self.k, self.n)
 end
-function Quaternion:toAxisAngle() -- Quaternion to other rotation methods
+function Quaternion.__index:toAxisAngle() -- Quaternion to other rotation methods
     local radAngle = math.acos(self.n)
     local sinAngle = math.sin(radAngle)
     local angle = math.deg(radAngle) * 2
     local axis = vec(self.i, self.j, self.k)/sinAngle
     return angle, axis
-end function Quaternion:toTaitBryan()
+end function Quaternion.__index:toTaitBryan()
     local u
     local v -- this is the only non-locking term
     local w
@@ -78,12 +81,13 @@ end function Quaternion:toTaitBryan()
     -- return the thing
     return vec(u, v, w)
 end
-function Quaternion:rotLocationQuaternion(position) -- Versor functions
+function Quaternion.__index:rotLocationQuaternion(position) -- Versor functions
     return self * position * self:inverse()
-end function Quaternion:rotPoint(point) 
+end function Quaternion.__index:rotPoint(point) 
     return self:rotLocationQuaternion(Quaternion.byPoint(point)):toTaitBryan()
 end
-function Quaternion:__tostring() -- metamethods
+-- metamethods
+function Quaternion:__tostring()
     local text = ""..self.n
     if self.i < 0 then
         text = text.."-i"
@@ -105,16 +109,44 @@ function Quaternion:__tostring() -- metamethods
     return text..math.abs(self.k)
 end
 function Quaternion.__mul(a, b)
-    return Quaternion.new(
-        (a.n * b.n) - (a.i * b.i) - (a.j * b.j) - (a.k * b.k),
-        (a.n * b.i) + (a.i * b.n) + (a.j * b.k) - (a.k * b.j),
-        (a.n * b.j) - (a.i * b.k) + (a.j * b.n) + (a.k * b.i),
-        (a.n * b.k) + (a.i * b.j) - (a.j * b.i) + (a.k * b.n)
-    )
+    if type(b) == "number" then
+        return Quaternion.new(
+            a.n*b,
+            a.i*b,
+            a.j*b,
+            a.k*b
+        )
+    elseif type(a) == "number" then
+        return b*a
+    else
+        return Quaternion.new(
+            (a.n * b.n) - (a.i * b.i) - (a.j * b.j) - (a.k * b.k),
+            (a.n * b.i) + (a.i * b.n) + (a.j * b.k) - (a.k * b.j),
+            (a.n * b.j) - (a.i * b.k) + (a.j * b.n) + (a.k * b.i),
+            (a.n * b.k) + (a.i * b.j) - (a.j * b.i) + (a.k * b.n)
+        )
+    end
 end
-Quaternion.__index = Quaternion
 
--- testing
+
+
+-- Helper functions --
+Quaternions = {}
+-- this code is a reimplementation of code from https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm. Please check them out if you wanna mess around with more funky geometry stuff.
+function Quaternions.slerp(a,b,progress)
+    -- try to be lazy
+    if a == b or progress == 0 then
+        return a:copy()
+    elseif progress == 1 then
+        return b:copy()
+    else
+
+    end
+end
+
+
+
+-- testing --
 --[[local testPosQuat = Quaternion.new(0,1,0,0)
 local versor1 = Quaternion.byTaitBryan(vec(90,0,0))
 local versor2 = Quaternion.byTaitBryan(vec(0,90,0))

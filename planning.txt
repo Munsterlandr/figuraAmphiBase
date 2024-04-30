@@ -1,4 +1,9 @@
 
+Quaternion Interpolation method:
+Because I'm interpolating between rotation quaternions, as long as the chosen method is consistent with how much it changes and preserves the vector's length, I should be fine. Problem is that i need it to work between two 4d points.
+
+
+
 The New System:
     What I want for a new system:
 - lightweight
