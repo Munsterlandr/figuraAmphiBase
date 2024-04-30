@@ -89,7 +89,10 @@ end, function (self) -- tick
 
   self.neckAngle:advance()
 end, function (self, delta, pose) -- render
-  -- really happens in AmphiLook
+  local neckRot = NeckPoser.neckAngle:getAt(delta)
+
+  pose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot:add(neckRot)
+  pose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot:add(-neckRot)
 end)
 
 
@@ -105,7 +108,7 @@ end, function (self, delta, pose) -- render
   local negLookAdjust = headRot/-3
   local tailRotAmount = negLookAdjust * vec(-1,1,1)
 
-  local neckRot = NeckPoser.neckAngle:getAt(delta)
+  
 
   local rotHelper = GlobalRotter.new(pose, models.amphi.root.Amphi)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips):rotBy(negLookAdjust)
@@ -114,9 +117,9 @@ end, function (self, delta, pose) -- render
   :stepTo(models.amphi.root.Amphi.Hips.TailBase.TailTip):rotBy(tailRotAmount)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist):rotBy(posLookAdjust)
   :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders):rotBy(posLookAdjust)
-  rotHelper:splitTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms):rotBy(negLookAdjust * vec(1,0,1))
-  rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck):rotBy(posLookAdjust + neckRot)
-  :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head):rotBy(posLookAdjust - neckRot) --]]
+  rotHelper:splitTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms):rotBy(negLookAdjust * vec(1,-1,1))
+  rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck):rotBy(posLookAdjust)
+  :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head):rotBy(posLookAdjust) --]]
 
 
 end)
@@ -323,8 +326,8 @@ function events.render(delta, context)
     if currentPose == "SLEEPING" then
     else
       StandUp:render(delta, amphiPose)
-      AmphiLook:render(delta, amphiPose)
       NeckPoser:render(delta, amphiPose)
+      AmphiLook:render(delta, amphiPose)
     end
   end
   local humanPose
