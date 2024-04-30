@@ -19,7 +19,7 @@ HumanForm = PoseData.new() -- if you've added extra geometry please edit this to
 
 -- goop syncer --
 Goop = DataAnimator.new(function (self) -- init
-  self.goopening = SmoothVal:new(0, 0.3)
+  self.goopening = SmoothVal.new(0, 0.3)
 end, function (self) -- tick
   self.goopening:advance()
 end, function (self, delta, pose) -- render
@@ -45,7 +45,7 @@ end)
 Tf = DataAnimator.new(function (self) -- init
   self.isTransforming = false
   self.isAmphi = true
-  self.amphinity = SmoothVal:new(1, 0.15)
+  self.amphinity = SmoothVal.new(1, 0.15)
 end, function (self) -- tick
   if self.isTransforming then
     -- WIP
@@ -79,7 +79,7 @@ vanilla_model.CAPE:setVisible(false)
 
 -- neck pose adjuster --
 NeckPoser = DataAnimator.new(function (self) -- init
-  self.neckAngle = SmoothVal:new(vec(30,0,0), 0.3)
+  self.neckAngle = SmoothVal.new(vec(30,0,0), 0.3)
 end, function (self) -- tick
   if player:isSprinting() then
     self.neckAngle.target = vec(10,0,0)
@@ -134,8 +134,8 @@ end)
 
 -- standing system --
 StandUp = DataAnimator.new(function (self) -- init
-  self.standingness = SmoothVal:new(0, 0.2)
-  self.tailAdjustness = SmoothVal:new(0,0.2)
+  self.standingness = SmoothVal.new(0, 0.2)
+  self.tailAdjustness = SmoothVal.new(0,0.2)
 
   self.shouldStand = false
 
@@ -214,16 +214,91 @@ StandUp.keybind.release = pings.standDown
 
 -- cam handler --
 Ducking = DataAnimator.new(function (self) -- init
+  self.camPos = SmoothVal.new(vec(0,-0.5,0), 0.3)
+  self.bounds = {}
+  self.xOffset = 0
+  self.zOffset = 0
 end, function (self) -- tick
+  self.camPos:advance()
 end, function (self, delta, pose) -- render
+  if currentPose == "SLEEPING" then
+    -- null other ones
+  elseif not StandUp:isStanding() then
+    self.camPos.target = vec(0,-0.5,0)
+  elseif currentPose ~= "SWIMMING" and currentPose ~= "FALL_FLYING" then
+    local minHeight = 1.8
+    local maxHeight = 2.2
+    if player:isCrouching() then
+      minHeight = 1.5
+      maxHeight = 1.9
+    end
+
+    local basePos = player:getPos()
+    local playerPosInt = basePos:floor()
+    local playerPosDec = basePos % 1
+
+    self.xOffset = 0
+    self.zOffset = 0
+
+    self.bounds = {}
+    self:addUpBounds(playerPosInt)
+    if playerPosDec.x > 0.7 then
+      self.xOffset = 1
+      self:addUpBounds(playerPosInt)
+    elseif playerPosDec.x < 0.3 then
+      self.xOffset = -1
+      self:addUpBounds(playerPosInt)
+    end
+    if playerPosDec.z > 0.7 then
+      self.zOffset = 1
+      self:addUpBounds(playerPosInt)
+    elseif playerPosDec.z < 0.3 then
+      self.zOffset = -1
+      self:addUpBounds(playerPosInt)
+    end
+
+    local _, hitAt = raycast:aabb(basePos, basePos+vec(0,maxHeight,0), self.bounds)
+    local rayDist = vec(0,0.4,0)
+    if hitAt ~= nil then
+      rayDist = hitAt - basePos - vec(0,minHeight,0)
+      if rayDist.y < -0.4 then
+        rayDist = vec(0,0.4,0)
+      end
+    end
+
+    if self.camPos.target.y > rayDist.y then
+      self.camPos:setVal(rayDist)
+    else
+      self.camPos.target = rayDist
+    end
+  else
+    self.camPos.target = vec(0,0,0)
+  end
+
+  pose.camPos = self.camPos:getAt(delta)
 end)
+function Ducking:addRaycastBounds(blockPos)
+  local collisionShapes = world.getBlockState(blockPos):getCollisionShape()
+  if collisionShapes ~= nil then
+    for _, bounds in ipairs(collisionShapes) do
+      local newBound = {}
+      newBound[1] = bounds[1] + vec(-0.29999,0,-0.29999) + blockPos
+      newBound[2] = bounds[2] + vec(0.29999,0,0.29999) + blockPos
+      self.bounds[#self.bounds+1] = newBound
+    end
+  end
+end function Ducking:addUpBounds(playerPosInt)
+  self:addRaycastBounds(playerPosInt + vec(self.xOffset,1,self.zOffset))
+  self:addRaycastBounds(playerPosInt + vec(self.xOffset,2,self.zOffset))
+  self:addRaycastBounds(playerPosInt + vec(self.xOffset,3,self.zOffset))
+end
 
 
 
 -- wagger --
 Wagger = DataAnimator.new(function (self) -- init
   self.isWagging = false
-  self.tailYaw = Oscillator:new(2,0.1,120,0.2)
+  self.tailYaw = Oscillator.new(2,0.1,120,0.2)
 end, function (self) -- tick
   self.tailYaw:advance()
 end, function (self, delta, pose) -- render
@@ -306,6 +381,7 @@ function events.tick()
     Wagger:tick()
     NeckPoser:tick()
     StandUp:tick()
+    Ducking:tick()
   end
   Tf:tick()
 end
@@ -328,6 +404,7 @@ function events.render(delta, context)
       StandUp:render(delta, amphiPose)
       NeckPoser:render(delta, amphiPose)
       AmphiLook:render(delta, amphiPose)
+      Ducking:render(delta, amphiPose)
     end
   end
   local humanPose

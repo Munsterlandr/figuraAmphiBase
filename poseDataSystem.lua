@@ -150,7 +150,7 @@ end
 function PoseData.__index:apply()
     renderer:setOffsetCameraRot(self.camRot:get())
     renderer:setEyeOffset(self.camPos)
-    renderer:setCameraPos(self.camPos)
+    renderer:setOffsetCameraPivot(self.camPos)
     for part,data in pairs(self.parts) do
         part:setRot(data.rot:get())
         part:setPos(data.pos)

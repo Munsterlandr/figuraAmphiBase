@@ -34,7 +34,7 @@ end function SmoothVal:set(val)
     self.old = val
     self.new = val
     self.target = val
-end function SmoothVal:new(target, lerp)
+end function SmoothVal.new(target, lerp)
     local o = {}
     o.old = target
     o.new = target
@@ -49,12 +49,12 @@ end
 -- Oscillator class
 Oscillator = {}
 setmetatable(Oscillator, {__index = SmoothVal})
-function Oscillator:new(deviation, deviationSmoothing, ticksPerCycle, speedSmoothing)
-    local o = SmoothVal.new(self,0,1)
-    o.deviation = SmoothVal:new(deviation, deviationSmoothing)
-    o.advanceBy = SmoothVal:new(2*math.pi / (ticksPerCycle), speedSmoothing)
+function Oscillator.new(deviation, deviationSmoothing, ticksPerCycle, speedSmoothing)
+    local o = SmoothVal.new(0,1)
+    o.deviation = SmoothVal.new(deviation, deviationSmoothing)
+    o.advanceBy = SmoothVal.new(2*math.pi / (ticksPerCycle), speedSmoothing)
     o.currentProgression = 0
-    setmetatable(o, {__index = self})
+    setmetatable(o, {__index = Oscillator})
     return o
 end function Oscillator:advance()
     self.currentProgression = (self.currentProgression + self.advanceBy.new) % (2*math.pi)
