@@ -1,59 +1,165 @@
 require "quaternion"
 
 
+-- versor handler --
+VersorHandler = {__index = {
+    versor = Quaternion.new(1,0,0,0)
+}}
+-- constructor
+function VersorHandler.new()
+    local o = {}
+    setmetatable(o, VersorHandler)
+    return o
+end
+-- methods
+function     VersorHandler.__index:copy()
+    local new = VersorHandler.new()
+    new.versor = self.versor:copy()
+    return new
+end function VersorHandler.__index:get()
+    return self.versor:toTaitBryan()
+end function VersorHandler.__index:addVersor(versor)
+    self.versor = self.versor * versor
+end function VersorHandler.__index:add(rot)
+    self:addVersor(Quaternion.byTaitBryan(rot))
+end function VersorHandler.__index:set(rot)
+    self.versor = Quaternion.byTaitBryan(rot)
+end function VersorHandler.__index:interpolateTo(versor, progress)
+    local new = VersorHandler.new()
+    new.versor = Quaternions.slerp(self.versor, versor, progress)
+    return new
+end
 
--- PartData
-PartData = {
-    rot = vec(0,0,0),
+
+
+-- PartData --
+PartData = { __index = {
+    rot = VersorHandler.new(),
     pos = vec(0,0,0),
     scale = vec(1,1,1),
     pivot = vec(0,0,0)
-}
+}}
+-- constructor
+function PartData.new()
+    local o = {
+        rot = VersorHandler.new()
+    }
+    setmetatable(o, PartData)
+    return o
+end
+-- methods
+function     PartData.__index:copy()
+    local new = PartData:new()
+    new.rot = self.rot:copy()
+    new.pos = self.pos:copy()
+    new.scale = self.scale:copy()
+    new.pivot = self.pivot:copy()
+    return new
+end function PartData.__index:add(data)
+    self.rot = self.rot * data.rot
+    self.pos = self.pos + data.pos
+    self.scale = self.scale * data.scale
+    self.pivot = self.pivot + data.pivot
+end function PartData.__index:setRot(rot)
+    self.rot = Quaternion.byTaitBryan(rot)
+end function PartData.__index:addVersor(versor)
+    self.rot = self.rot * versor
+end function PartData.__index:addRot(rot)
+    self:addVersor(Quaternion.byTaitBryan(rot))
+end function PartData.__index:getRot()
+    return self.rot:toTaitBryan()
+end function PartData.__index:interpolateTo(part, by)
+    local new = PartData.new()
+    -- interpolate rotation
+    new.rot = self.rot:interpolateTo(part.rot.versor, by)
+
+    -- everything else is straightforward
+    new.pos = math.lerp(self.pos, part.pos, by)
+    new.scale = math.lerp(self.scale, part.scale, by)
+    new.pivot = math.lerp(self.pivot, part.pivot, by)
+    return new
+end
+-- metamethods
 function PartData.__add(a, b)
-    local c = PartData:new()
-    c.rot = a.rot + b.rot
+    local c = PartData.new()
+    c.rot.versor = a.rot.versor * b.rot.versor
     c.pos = a.pos + b.pos
     c.scale = a.scale * b.scale
     c.pivot = a.pivot + b.pivot
     return c
-end function PartData.__mul(a, b)
-    local c = PartData:new()
-    c.rot = a.rot * b
-    c.pos = a.pos * b
-    -- ignore scale
-    c.pivot = a.pivot * b
-    return c
 end
-function PartData:new()
+
+
+
+-- PoseData --
+PoseData = {__index = {
+    camPos = vec(0,0,0),
+}}
+-- constructor
+function PoseData.new()
     local o = {}
-    setmetatable(o, PartData)
+    o.parts = {}
+    o.camRot = VersorHandler.new()
+    setmetatable(o, PoseData)
     return o
-end function PartData:copy()
-    local new = PartData:new()
-    for key, value in pairs(self) do
-        new[key] = value
+end
+-- methods
+function PoseData.__index:copy()
+    local new = PoseData:new()
+    new.camPos = self.camPos
+    new.camRot = self.camRot
+    for part, data in pairs(self.parts) do
+        new.parts[part] = data:copy()
     end
     return new
-end function PartData:add(data)
-    self.rot = self.rot + data.rot
-    self.pos = self.pos + data.pos
-    self.scale = self.scale * data.scale
-    self.pivot = self.pivot + data.pivot
-end function PartData:potency(val)
-    self.rot = self.rot * val
-    self.pos = self.pos * val
-    self.scale = self.scale * val + (self.scale*(1-val))
-    self.pivot = self.pivot * val
+end function PoseData.__index:add(pose)
+    self.camRot.versor = self.camRot.versor * pose.camRot.versor
+    self.camPos = self.camPos + pose.camPos
+    for part, data in pairs(pose.parts) do
+        if self.parts[part] == nil then
+            self.parts[part] = PartData:new()
+        end
+        self.parts[part] = self.parts[part] + data
+    end
 end
-PartData.__index = PartData
+function PoseData.__index:part(part)
+    if self.parts[part] == nil then
+        self.parts[part] = PartData:new()
+    end
+    return self.parts[part]
+end function PoseData.__index:checkPart(part)
+    if self.parts[part] == nil then
+        return PartData.new()
+    else
+        return self.parts[part]
+    end
+end function PoseData.__index:interpolateTo(pose, t)
+    local netPose = PoseData.new()
+    -- go through self
+    for part, data in pairs(self.parts) do
+        netPose.parts[part] = data:interpolateTo(pose:checkPart(part), t)
+    end
+    -- go through other set
+    for part, data in pairs(pose.parts) do
+        if netPose.parts[part] == nil then
+            netPose.parts[part] = self:checkPart(part):interpolateTo(data, t)
+        end
+    end
+    return netPose
+end
+function PoseData.__index:apply()
+    renderer:setOffsetCameraRot(self.camRot:get())
+    renderer:setEyeOffset(self.camPos)
+    renderer:setCameraPos(self.camPos)
+    for part,data in pairs(self.parts) do
+        part:setRot(data.rot:get())
+        part:setPos(data.pos)
+        part:setScale(data.scale)
+        part:setOffsetPivot(data.pivot)
+    end
+end
 
-
-
--- PoseData
-PoseData = {
-    camPos = vec(0,0,0),
-    camRot = vec(0,0,0)
-}
+-- metamethods
 function PoseData.__add(a,b) -- assumes both are PoseData
     local c = a:copy()
     c:add(b)
@@ -66,80 +172,22 @@ end function PoseData.__mul(a,b) -- b must be a number
         c.parts[part] = data * b
     end
     return c
-end PoseData.__index = PoseData
-function PoseData:new()
-    local o = {}
-    o.parts = {}
-    setmetatable(o, PoseData)
-    return o
-end function PoseData:copy()
-    local new = PoseData:new()
-    new.camPos = self.camPos
-    new.camRot = self.camRot
-    for part, data in pairs(self.parts) do
-        new.parts[part] = data:copy()
-    end
-    return new
-end function PoseData:add(pose)
-    self.camPos = self.camPos + pose.camPos
-    self.camRot = self.camRot + pose.camRot
-    for part, data in pairs(pose.parts) do
-        if self.parts[part] == nil then
-            self.parts[part] = PartData:new()
-        end
-        self.parts[part] = self.parts[part] + data
-    end
-end function PoseData:potency(val)
-    self.camPos = self.camPos * val
-    self.camRot = self.camRot * val
-    for _,data in pairs(self.parts) do
-        data:potency(val)
-    end
-end
-function PoseData:part(part)
-    if self.parts[part] == nil then
-        self.parts[part] = PartData:new()
-    end
-    return self.parts[part]
-end function PoseData:checkPart(part)
-    if self.parts[part] == nil then
-        return PartData
-    else
-        return self.parts[part]
-    end
-end
-function PoseData:apply()
-    renderer:setOffsetCameraRot(self.camRot)
-    renderer:setEyeOffset(self.camPos)
-    renderer:setCameraPos(self.camPos)
-    for part,data in pairs(self.parts) do
-        part:setRot(data.rot)
-        part:setPos(data.pos)
-        part:setScale(data.scale)
-        part:setOffsetPivot(data.pivot)
-    end
 end
 
 
 
--- animator
+-- animator --
 DataAnimator = {}
-function DataAnimator:tick()
-end function DataAnimator:render(delta, netPose)
-    return netPose
-end
-DataAnimator.__index = DataAnimator
-function DataAnimator:new(init, tick, render)
+function DataAnimator.new(init, tick, render)
     local o = {}
     init(o)
     o.tick = tick
     o.render = render
-    setmetatable(o, DataAnimator)
     return o
 end
 
 --[[ animator template:
-Animator:new(function (self) -- init
+DataAnimator:new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
@@ -153,14 +201,14 @@ function GlobalRotter.new(pose, initialPart)
     local o = {}
     o.pose = pose
     o.part = initialPart
-    o.versor = Quaternion.byTaitBryan(pose:checkPart(initialPart).rot)
+    o.versor = pose:checkPart(initialPart).rot.versor:copy()
     setmetatable(o, {__index = GlobalRotter})
     return o
 end function GlobalRotter:stepTo(part) -- returns self for chaining
     if self.part == part:getParent() then
         self.part = part
         self.unparentVersor = self.versor:inverse()
-        self.versor = Quaternion.byTaitBryan(self.pose:checkPart(part).rot) * self.versor
+        self.versor = self.pose:checkPart(part).rot.versor * self.versor
         return self
     else
         print("Given part is not child of current part.")
@@ -177,7 +225,7 @@ end function GlobalRotter:splitTo(part)
 end function GlobalRotter:rotBy(rot) -- returns self for chaining
     local rotVersor = Quaternion.byTaitBryan(rot)
     self.versor = self.versor * rotVersor
-    self.pose:part(self.part).rot = (self.unparentVersor*self.versor):toTaitBryan()
+    self.pose:part(self.part).rot.versor = self.unparentVersor*self.versor
 
     --print(rotVersor:toTaitBryan())
 
