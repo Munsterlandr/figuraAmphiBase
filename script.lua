@@ -267,7 +267,7 @@ end, function (self, delta, pose) -- render
     end
 
     if self.camPos.target.y > rayDist.y then
-      self.camPos:setVal(rayDist)
+      self.camPos:set(rayDist)
     else
       self.camPos.target = rayDist
     end
