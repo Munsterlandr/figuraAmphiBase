@@ -266,7 +266,7 @@ end, function (self, delta, pose) -- render
       end
     end
 
-    if self.camPos.target.y > rayDist.y then
+    if self.camPos:getAt(delta).y > rayDist.y then
       self.camPos:set(rayDist)
     else
       self.camPos.target = rayDist
@@ -322,8 +322,47 @@ end
 
 -- sleep pose --
 Sleep = DataAnimator.new(function (self) -- init
+  self.baseSleepPose = PoseData.new()
+  self.baseSleepPose:part(models.amphi.root).rot:set(vec(90,0,180))
+  self.baseSleepPose:part(models.amphi.root).pos = vec(0,4,10)
+
+  self.flatSleepPose = PoseData.new()
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips).rot:set(vec(0,0,0))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.TailBase).rot:set(vec(15,0,0))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot:set(vec(-16,0,0))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.Legs.LeftLeg).rot:set(vec(-50,0,-20))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.Legs.RightLeg).rot:set(vec(-50,0,20))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.Waist).rot:set(vec(-5,0,0))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders).rot:set(vec(10,0,0))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot:set(vec(-5,0,0))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot:set(vec(5,0,0))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm).rot:set(vec(10,0,-50))
+  self.flatSleepPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm).rot:set(vec(10,0,50))
+
+  self.sideTurnVal = SmoothVal.new(0,0.2)
+
+  self.firstPersonCamPos = SmoothVal.new(vec(0,0,0),0.3)
+  self.firstPersonCamRot = SmoothVal.new(vec(0,180,0),0.3)
+
 end, function (self) -- tick
+  self.sideTurnVal:advance()
+  self.firstPersonCamPos:advance()
+  self.firstPersonCamRot:advance()
 end, function (self, delta, pose) -- render
+  if currentPose == "SLEEPING" then
+    local sleepPose = self.flatSleepPose:copy()
+    -- insert stuff to adjust to side poses
+    pose:overwrite(sleepPose + self.baseSleepPose)
+    if renderer:isFirstPerson() then
+      pose.camRot:set(self.firstPersonCamRot:getAt(delta))
+      pose.camPos = self.firstPersonCamPos:getAt(delta)
+    else
+      pose.camPos = vec(0,0,0)
+    end
+  else -- fix issues
+    pose:part(models.amphi.root.Amphi.Hips.Legs.LeftLeg).rot:set(vec(0,0,0))
+    pose:part(models.amphi.root.Amphi.Hips.Legs.RightLeg).rot:set(vec(0,0,0))
+  end
 end)
 
 
@@ -382,6 +421,7 @@ function events.tick()
     NeckPoser:tick()
     StandUp:tick()
     Ducking:tick()
+    Sleep:tick()
   end
   Tf:tick()
 end
@@ -392,20 +432,19 @@ end
 --"context" is a string that tells from where this render event was called (the paperdoll, gui, player render, first person)
 function events.render(delta, context)
   local finalPose = PoseData.new()
-  finalPose:part(models.amphi).pos = vec(0,-12,-13)
+  finalPose:part(models.amphi.root).pos = vec(0,-12,-13)
+
 
   -- apply the functions
   local amphiPose
   if Tf.isAmphi == true then
-    amphiPose = PoseData.new() + AmphiForm
+    amphiPose = AmphiForm:copy()
+    StandUp:render(delta, amphiPose)
+    NeckPoser:render(delta, amphiPose)
+    AmphiLook:render(delta, amphiPose)
+    Ducking:render(delta, amphiPose)
+    Sleep:render(delta, amphiPose)
     Wagger:render(delta,amphiPose)
-    if currentPose == "SLEEPING" then
-    else
-      StandUp:render(delta, amphiPose)
-      NeckPoser:render(delta, amphiPose)
-      AmphiLook:render(delta, amphiPose)
-      Ducking:render(delta, amphiPose)
-    end
   end
   local humanPose
   if Tf.isTransforming or not Tf.isAmphi then
@@ -418,5 +457,5 @@ function events.render(delta, context)
   finalPose = Tf:render(delta, finalPose, amphiPose, humanPose)
 
   -- apply finalPose to being
-  finalPose:apply()
+  finalPose:apply(delta)
 end

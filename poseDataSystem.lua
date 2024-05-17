@@ -60,14 +60,6 @@ end function PartData.__index:add(data)
     self.pos = self.pos + data.pos
     self.scale = self.scale * data.scale
     self.pivot = self.pivot + data.pivot
-end function PartData.__index:setRot(rot)
-    self.rot = Quaternion.byTaitBryan(rot)
-end function PartData.__index:addVersor(versor)
-    self.rot = self.rot * versor
-end function PartData.__index:addRot(rot)
-    self:addVersor(Quaternion.byTaitBryan(rot))
-end function PartData.__index:getRot()
-    return self.rot:toTaitBryan()
 end function PartData.__index:interpolateTo(part, by)
     local new = PartData.new()
     -- interpolate rotation
@@ -93,7 +85,7 @@ end
 
 -- PoseData --
 PoseData = {__index = {
-    camPos = vec(0,0,0),
+    camPos = vec(0,0,0)
 }}
 -- constructor
 function PoseData.new()
@@ -106,8 +98,8 @@ end
 -- methods
 function PoseData.__index:copy()
     local new = PoseData:new()
-    new.camPos = self.camPos
-    new.camRot = self.camRot
+    new.camPos = self.camPos:copy()
+    new.camRot.versor = self.camRot.versor:copy()
     for part, data in pairs(self.parts) do
         new.parts[part] = data:copy()
     end
@@ -120,6 +112,16 @@ end function PoseData.__index:add(pose)
             self.parts[part] = PartData:new()
         end
         self.parts[part] = self.parts[part] + data
+    end
+end function PoseData.__index:overwrite(pose)
+    if pose.camRot.versor ~= Quaternion.new(1,0,0,0) then
+        self.camRot.versor = pose.camRot.versor:copy()
+    end
+    if pose.camPos ~= PoseData.__index.camPos then
+        self.camPos = pose.camPos:copy()
+    end
+    for part, data in pairs(pose.parts) do
+        self.parts[part] = pose.parts[part]:copy()
     end
 end
 function PoseData.__index:part(part)
@@ -147,7 +149,8 @@ end function PoseData.__index:interpolateTo(pose, t)
     end
     return netPose
 end
-function PoseData.__index:apply()
+function PoseData.__index:apply(delta)
+
     renderer:setOffsetCameraRot(self.camRot:get())
     renderer:setEyeOffset(self.camPos)
     renderer:setOffsetCameraPivot(self.camPos)
@@ -158,7 +161,6 @@ function PoseData.__index:apply()
         part:setOffsetPivot(data.pivot)
     end
 end
-
 -- metamethods
 function PoseData.__add(a,b) -- assumes both are PoseData
     local c = a:copy()
