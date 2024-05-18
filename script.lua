@@ -370,6 +370,21 @@ end)
 
 
 
+-- crouch adjusters --
+PlayerCrouch = DataAnimator.new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta, pose) -- render
+  
+end)
+
+AmphiCrouch = DataAnimator.new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta, pose) -- render
+
+end)
+
+
+
 -- action wheel --
 ActionPages = {
   amphiMainPage = action_wheel:newPage(),

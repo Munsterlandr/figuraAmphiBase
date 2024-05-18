@@ -189,7 +189,7 @@ function DataAnimator.new(init, tick, render)
 end
 
 --[[ animator template:
-DataAnimator:new(function (self) -- init
+DataAnimator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
