@@ -108,19 +108,22 @@ end, function (self, delta, pose) -- render
   local negLookAdjust = headRot/-3
   local tailRotAmount = negLookAdjust * vec(-1,1,1)
 
-  
+  local legYawVec = vec(0,negLookAdjust.y,0)
+  local armYawVec = vec(0,posLookAdjust.y,0)
+  if player:getVehicle() ~= nil then
+    legYawVec = vec(0,0,0)
+  end
 
   local rotHelper = GlobalRotter.new(pose, models.amphi.root.Amphi)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips):rotBy(negLookAdjust)
-  :splitTo(models.amphi.root.Amphi.Hips.Legs):rotBy(posLookAdjust * vec(1,0,1))
+  :splitTo(models.amphi.root.Amphi.Hips.Legs):neutralize():rotBy(legYawVec)
   rotHelper:splitTo(models.amphi.root.Amphi.Hips.TailBase):rotBy(tailRotAmount)
   :stepTo(models.amphi.root.Amphi.Hips.TailBase.TailTip):rotBy(tailRotAmount)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist):rotBy(posLookAdjust)
   :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders):rotBy(posLookAdjust)
-  rotHelper:splitTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms):rotBy(negLookAdjust * vec(1,-1,1))
+  rotHelper:splitTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms):neutralize():rotBy(armYawVec)
   rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck):rotBy(posLookAdjust)
   :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head):rotBy(posLookAdjust) --]]
-
 
 end)
 
@@ -193,7 +196,7 @@ function StandUp:isStanding()
 
   if currentPose == "SLEEPING" then
     return false
-  elseif currentPose == "SWIMMING" or currentPose == "FALL_FLYING" or player:isClimbing() or itemNeedsBiped or player:isFishing() or player:getControlledVehicle() ~= nil then
+  elseif currentPose == "SWIMMING" or currentPose == "FALL_FLYING" or player:isClimbing() or itemNeedsBiped or player:isFishing() or player:getVehicle() ~= nil then
     return true
   else
     return self.shouldStand

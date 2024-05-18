@@ -18,7 +18,7 @@ function     VersorHandler.__index:copy()
     return new
 end function VersorHandler.__index:get()
     return self.versor:toTaitBryan()
-end function VersorHandler.__index:addVersor(versor)
+end function VersorHandler.__index:addVersor(versor) -- this does intrinsic rotations, ie axis of rotation is moved by said rotation
     self.versor = self.versor * versor
 end function VersorHandler.__index:add(rot)
     self:addVersor(Quaternion.byTaitBryan(rot))
@@ -206,30 +206,27 @@ function GlobalRotter.new(pose, initialPart)
     o.versor = pose:checkPart(initialPart).rot.versor:copy()
     setmetatable(o, {__index = GlobalRotter})
     return o
+end function GlobalRotter:copy()
+    local copy = GlobalRotter.new(self.pose, self.part)
+    copy.versor = self.versor:copy()
+    return copy
 end function GlobalRotter:stepTo(part) -- returns self for chaining
     if self.part == part:getParent() then
         self.part = part
         self.unparentVersor = self.versor:inverse()
-        self.versor = self.pose:checkPart(part).rot.versor * self.versor
+        self.versor = self.versor * self.pose:checkPart(part).rot.versor
         return self
     else
         print("Given part is not child of current part.")
     end
 end function GlobalRotter:splitTo(part)
-    if part:getParent() == self.part then
-        local splitRotter = GlobalRotter.new(self.pose, part)
-        splitRotter.unparentVersor = self.versor:inverse()
-        splitRotter.versor = splitRotter.versor * self.versor
-        return splitRotter
-    else
-        print("the given part is not a child of the current part.")
-    end
-end function GlobalRotter:rotBy(rot) -- returns self for chaining
-    local rotVersor = Quaternion.byTaitBryan(rot)
-    self.versor = self.versor * rotVersor
+    return self:copy():stepTo(part)
+end function GlobalRotter:rotByVersor(versor) -- returns self for chaining
+    self.versor = versor * self.versor -- extrinsic rotation, good.
     self.pose:part(self.part).rot.versor = self.unparentVersor*self.versor
-
-    --print(rotVersor:toTaitBryan())
-
     return self
+end function GlobalRotter:rotBy(rot)
+    return self:rotByVersor(Quaternion.byTaitBryan(rot))
+end function GlobalRotter:neutralize()
+    return self:rotByVersor(self.versor:inverse())
 end
