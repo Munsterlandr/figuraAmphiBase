@@ -218,6 +218,7 @@ StandUp.keybind.release = pings.standDown
 -- cam handler --
 Ducking = DataAnimator.new(function (self) -- init
   self.camPos = SmoothVal.new(vec(0,-0.5,0), 0.3)
+  self.standingBodyRot = SmoothVal.new(0, 0.3)
   self.bounds = {}
   self.xOffset = 0
   self.zOffset = 0
@@ -377,10 +378,22 @@ end, function (self, delta, pose) -- render
   
 end)
 
+
 AmphiCrouch = DataAnimator.new(function (self) -- init
+  self.base = PoseData.new()
+  self.base:part(models.amphi.root.Amphi.Hips.Legs).pos = vec(0,0,-4)
+  self.base:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).pos = vec(0,3.2,0)
+
+  self.polypedal = PoseData.new()
+
+  self.bipedal = PoseData.new()
+  self.bipedal:part(models.amphi.root.Amphi.Hips.Legs).pos = vec(0,-2,0)
+  self.bipedal:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).pos = vec(0,-2,-4)
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
-
+  if player:isCrouching() then
+    pose:add(self.base + self.polypedal:interpolateTo(self.bipedal, StandUp.standingness:getAt(delta)))
+  end
 end)
 
 
@@ -457,10 +470,11 @@ function events.render(delta, context)
   local amphiPose
   if Tf.isAmphi == true then
     amphiPose = AmphiForm:copy()
+    AmphiCrouch:render(delta, amphiPose)
     StandUp:render(delta, amphiPose)
     NeckPoser:render(delta, amphiPose)
-    AmphiLook:render(delta, amphiPose)
     Ducking:render(delta, amphiPose)
+    AmphiLook:render(delta, amphiPose)
     Sleep:render(delta, amphiPose)
     Wagger:render(delta,amphiPose)
   end
