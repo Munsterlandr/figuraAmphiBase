@@ -345,7 +345,7 @@ Sleep = DataAnimator.new(function (self) -- init
 
   self.sideTurnVal = SmoothVal.new(0,0.2)
 
-  self.firstPersonCamPos = SmoothVal.new(vec(0,0,0),0.3)
+  self.firstPersonCamPos = SmoothVal.new(vec(-0.4,0.39,0),0.3)
   self.firstPersonCamRot = SmoothVal.new(vec(0,180,0),0.3)
 
 end, function (self) -- tick
