@@ -3,9 +3,9 @@ require "poseDataSystem"
 
 
 
--- currentPose variable (it's more efficient) --
+-- stray variables, for efficiency --
 local currentPose
-
+local velocity 
 
 
 -- Form PoseDatas --
@@ -162,8 +162,10 @@ StandUp = DataAnimator.new(function (self) -- init
 end, function (self) -- tick
   if self:isStanding() then
     self.standingness.target = 1
-    if currentPose == "SWIMMING" or currentPose == "FALL_FLYING" then
+    if currentPose == "SWIMMING" then
       self.tailAdjustness.target = 0
+    elseif currentPose == "FALL_FLYING" then
+      self.tailAdjustness.target = 1 - (math.clamp(velocity:length(), 0.5, 1) - 0.5) * 2
     else
       self.tailAdjustness.target = 1
     end
@@ -328,7 +330,7 @@ end
 Sleep = DataAnimator.new(function (self) -- init
   self.baseSleepPose = PoseData.new()
   self.baseSleepPose:part(models.amphi.root).rot:set(vec(90,0,180))
-  self.baseSleepPose:part(models.amphi.root).pos = vec(0,4,10)
+  self.baseSleepPose:part(models.amphi.root).pos = vec(0,6,10)
 
   self.flatSleepPose = PoseData.new()
   self.flatSleepPose:part(models.amphi.root.Amphi.Hips).rot:set(vec(0,0,0))
@@ -345,7 +347,7 @@ Sleep = DataAnimator.new(function (self) -- init
 
   self.sideTurnVal = SmoothVal.new(0,0.2)
 
-  self.firstPersonCamPos = SmoothVal.new(vec(-0.4,0.39,0),0.3)
+  self.firstPersonCamPos = SmoothVal.new(vec(0.6,0.39,0),0.3)
   self.firstPersonCamRot = SmoothVal.new(vec(0,180,0),0.3)
 
 end, function (self) -- tick
@@ -452,16 +454,19 @@ end
 
 -- tick event, called 20 times per second
 function events.tick()
-  currentPose = player:getPose() -- it's more efficient
+  currentPose = player:getPose()
+  velocity = player:getVelocity()
 
   if Tf.isAmphi then
     Wagger:tick()
     NeckPoser:tick()
     StandUp:tick()
     Ducking:tick()
+    Ears:tick()
     Sleep:tick()
   end
   Tf:tick()
+
 end
 
 -- render event, called every time your avatar is rendered
