@@ -381,6 +381,7 @@ end, function (self, delta, pose) -- render
 end)
 
 
+
 AmphiCrouch = DataAnimator.new(function (self) -- init
   self.base = PoseData.new()
   self.base:part(models.amphi.root.Amphi.Hips.Legs).pos = vec(0,0,-4)
@@ -400,7 +401,23 @@ end)
 
 
 
+-- ear handling --
 Ears = DataAnimator.new(function (self) -- init
+  self.earPoses = {
+    idle = PoseData.new(),
+    walk = PoseData.new(), -- no special anims for standing
+    run = PoseData.new(),
+    crouch = PoseData.new(),
+    crouchRun = PoseData.new(),
+    cruise = PoseData.new(),
+    cruisePanic = PoseData.new(),
+    sleep = PoseData.new()
+  }
+  -- setup all the poses
+
+
+  
+  self.earPoseCurrent = self.earPoses.idle:copy() -- will lerp into other poses as fit for the situation
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
 end)
@@ -462,8 +479,8 @@ function events.tick()
     NeckPoser:tick()
     StandUp:tick()
     Ducking:tick()
-    Ears:tick()
     Sleep:tick()
+    Ears:tick()
   end
   Tf:tick()
 
@@ -488,6 +505,7 @@ function events.render(delta, context)
     Ducking:render(delta, amphiPose)
     AmphiLook:render(delta, amphiPose)
     Sleep:render(delta, amphiPose)
+    Ears:render(delta, amphiPose)
     Wagger:render(delta,amphiPose)
   end
   local humanPose
