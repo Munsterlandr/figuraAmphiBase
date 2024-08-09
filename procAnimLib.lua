@@ -26,19 +26,19 @@ end
 TickedVal = {__index = {}}
 function TickedVal.new(val)
     local o = {}
-    o.oldVal = val
-    o.newVal = val
+    o.old = val
+    o.new = val
     setmetatable(o, TickedVal)
     return o
 end
 function TickedVal.__index:get(delta)
-    return math.lerp(self.oldVal, self.newVal, delta)
+    return math.lerp(self.old, self.new, delta)
 end function TickedVal.__index:set(val)
-    self.oldVal = self.newVal
-    self.newVal = val
+    self.old = self.new
+    self.new = val
 end function TickedVal.__index:overwrite(val)
-    self.oldVal = val
-    self.newVal = val
+    self.old = val
+    self.new = val
 end
 
 
@@ -48,11 +48,12 @@ SmoothVal = {__index = {}}
 setmetatable(SmoothVal.__index, TickedVal.__index)
 function SmoothVal.new(val, delta)
     local o = TickedVal.new(val)
+    o.target = val
     o.delta = delta
     setmetatable(o,SmoothVal)
     return o
 end function SmoothVal.__index:advance()
-    self:set(math.lerp(self.oldVal, self.newVal, self.delta))
+    self:set(math.lerp(self.new, self.target, self.delta))
 end
 
 
