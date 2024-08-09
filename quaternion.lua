@@ -168,8 +168,24 @@ end
 
 
 
+SmoothQuat = {__index = {}}
+function SmoothQuat.new(initVal)
+    local o = {}
+    o.oldQuat = initVal:copy()
+    o.newQuat = initVal
+    setmetatable(o, SmoothQuat)
+    return o
+end function SmoothQuat.__index:get(delta)
+    return Quaternions.slerp(self.oldQuat, self.newQuat, delta)
+end function SmoothQuat.__index:set(quat)
+    self.oldQuat = self.newQuat
+    self.newQuat = quat
+end
+
+
+
 -- testing --
---[[local testPosQuat = Quaternion.new(0,1,0,0)
-local versor1 = Quaternion.byTaitBryan(vec(90,0,0))
-local versor2 = Quaternion.byTaitBryan(vec(0,90,0))
---]]
+local smoothQuat = SmoothQuat.new(Quaternion.new(1,0,0,0))
+print(smoothQuat:get(0.5))
+smoothQuat:set(Quaternion.new(0,1,0,0))
+print(smoothQuat:get(0.5))

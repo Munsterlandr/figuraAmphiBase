@@ -6,6 +6,12 @@ TODOs:
 
 
 
+New System:
+- chainlink objects will be used to make the parts link together nicely, along with simplify adding physics to the ears
+- more functionality will be put on ticks, and a system to interpolate between ticks will be used. Future model-side aspects of ducking will be handled per tick, too.
+
+
+
 Quaternion Interpolation method:
 Because I'm interpolating between rotation quaternions, as long as the chosen method is consistent with how much it changes and preserves the vector's length, I should be fine. Problem is that i need it to work between two 4d points.
 

@@ -178,22 +178,7 @@ end
 
 
 
--- animator --
-DataAnimator = {}
-function DataAnimator.new(init, tick, render)
-    local o = {}
-    init(o)
-    o.tick = tick
-    o.render = render
-    return o
-end
 
---[[ animator template:
-DataAnimator.new(function (self) -- init
-end, function (self) -- tick
-end, function (self, delta, pose) -- render
-end)
-]]
 
 
 

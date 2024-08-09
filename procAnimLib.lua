@@ -22,44 +22,59 @@ end
 
 
 
--- SmoothVal
-SmoothVal = {}
-function SmoothVal:getAt(delta)
-    return math.lerp(self.old, self.new, delta)
-end
-function SmoothVal:advance()
-    self.old = self.new
-    self.new = math.lerp(self.new, self.target, self.lerp)
-end function SmoothVal:set(val)
-    self.old = val
-    self.new = val
-    self.target = val
-end function SmoothVal.new(target, lerp)
+-- TickedVal class
+TickedVal = {__index = {}}
+function TickedVal.new(val)
     local o = {}
-    o.old = target
-    o.new = target
-    o.target = target
-    o.lerp = lerp
-    setmetatable(o, {__index = SmoothVal})
+    o.oldVal = val
+    o.newVal = val
+    setmetatable(o, TickedVal)
     return o
+end
+function TickedVal.__index:get(delta)
+    return math.lerp(self.oldVal, self.newVal, delta)
+end function TickedVal.__index:set(val)
+    self.oldVal = self.newVal
+    self.newVal = val
+end function TickedVal.__index:overwrite(val)
+    self.oldVal = val
+    self.newVal = val
 end
 
 
 
--- Oscillator class
-Oscillator = {}
-setmetatable(Oscillator, {__index = SmoothVal})
-function Oscillator.new(deviation, deviationSmoothing, ticksPerCycle, speedSmoothing)
-    local o = SmoothVal.new(0,1)
-    o.deviation = SmoothVal.new(deviation, deviationSmoothing)
-    o.advanceBy = SmoothVal.new(2*math.pi / (ticksPerCycle), speedSmoothing)
-    o.currentProgression = 0
-    setmetatable(o, {__index = Oscillator})
+-- SmoothVal class
+SmoothVal = {__index = {}}
+setmetatable(SmoothVal.__index, TickedVal.__index)
+function SmoothVal.new(val, delta)
+    local o = TickedVal.new(val)
+    o.delta = delta
+    setmetatable(o,SmoothVal)
     return o
-end function Oscillator:advance()
-    self.currentProgression = (self.currentProgression + self.advanceBy.new) % (2*math.pi)
-    self.target = math.cos(self.currentProgression)*self.deviation.new
-    self.deviation:advance()
-    self.advanceBy:advance()
-    SmoothVal.advance(self)
+end function SmoothVal.__index:advance()
+    self:set(math.lerp(self.oldVal, self.newVal, self.delta))
 end
+
+
+
+-- Oscillator class, todo
+Oscillator = {__index = {}}
+
+
+
+-- animator --
+Animator = {}
+function Animator.new(init, tick, render)
+    local o = {}
+    init(o)
+    o.tick = tick
+    o.render = render
+    return o
+end
+
+--[[ animator template:
+Animator.new(function (self) -- init
+end, function (self) -- tick
+end, function (self, delta, pose) -- render
+end)
+]]

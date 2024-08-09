@@ -17,56 +17,28 @@ AmphiForm:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm).pos =
 HumanForm = PoseData.new() -- if you've added extra geometry please edit this to have it tuck it away!
 
 
--- goop syncer --
-Goop = DataAnimator.new(function (self) -- init
-  self.goopening = SmoothVal.new(0, 0.3)
+-- goop syncer, todo --
+Goop = Animator.new(function (self) -- init
 end, function (self) -- tick
-  self.goopening:advance()
 end, function (self, delta, pose) -- render
-  pose.parts[models.amphi.root.Goops] = pose:checkPart(models.amphi.root.Amphi)
-  pose.parts[models.amphi.root.Goops.Hips2] = pose:checkPart(models.amphi.root.Amphi.Hips)
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs)
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2.LeftLeg2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs.LeftLeg)
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2.RightLeg2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs.RightLeg)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head)
-
-  -- do the goopening (todo)
 end)
 
 
 
 -- transformation system --
-Tf = DataAnimator.new(function (self) -- init
+Tf = Animator.new(function (self) -- init
   self.isTransforming = false
   self.isAmphi = true
-  self.amphinity = SmoothVal.new(1, 0.15)
 end, function (self) -- tick
   if self.isTransforming then
     -- WIP
   end
-
-  self.amphinity:advance()
 end, function (self, delta, pose, amphiPose, humanPose) -- render
-  if self.isTransforming and self.isAmphi then
-    local amphinity = self.amphinity:getAt(delta)
-    return pose + amphiPose:potency(amphinity) + humanPose:potency(1 - amphinity)
-  elseif self.isAmphi then
-    return pose + amphiPose
-  else
-    return pose + humanPose
-  end
+  
 end)
 
 function pings.transform()
   Tf.isTransforming = true
-  Tf.goopening.target = 1
-  Tf.amphinity.target = 0 -- does nothing if already human
 end
 
 
@@ -78,7 +50,7 @@ vanilla_model.CAPE:setVisible(false)
 
 
 -- neck pose adjuster --
-NeckPoser = DataAnimator.new(function (self) -- init
+NeckPoser = Animator.new(function (self) -- init
   self.neckAngle = SmoothVal.new(vec(30,0,0), 0.3)
 end, function (self) -- tick
   if player:isSprinting() then
@@ -98,36 +70,13 @@ end)
 
 
 -- look around --
-AmphiLook = DataAnimator.new(function (self) -- init
+AmphiLook = Animator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
-  local headRot = vanilla_model.HEAD:getOriginRot()
-  headRot.y = (headRot.y + 180)%360 - 180
-
-  local posLookAdjust = headRot/3
-  local negLookAdjust = headRot/-3
-  local tailRotAmount = negLookAdjust * vec(-1,1,1)
-
-  local legYawVec = vec(0,negLookAdjust.y,0)
-  local armYawVec = vec(0,posLookAdjust.y,0)
-  if player:getVehicle() ~= nil then
-    legYawVec = vec(0,0,0)
-  end
-
-  local rotHelper = GlobalRotter.new(pose, models.amphi.root.Amphi)
-  rotHelper:stepTo(models.amphi.root.Amphi.Hips):rotBy(negLookAdjust)
-  :splitTo(models.amphi.root.Amphi.Hips.Legs):neutralize():rotBy(legYawVec)
-  rotHelper:splitTo(models.amphi.root.Amphi.Hips.TailBase):rotBy(tailRotAmount)
-  :stepTo(models.amphi.root.Amphi.Hips.TailBase.TailTip):rotBy(tailRotAmount)
-  rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist):rotBy(posLookAdjust)
-  :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders):rotBy(posLookAdjust)
-  rotHelper:splitTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms):neutralize():rotBy(armYawVec)
-  rotHelper:stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck):rotBy(posLookAdjust)
-  :stepTo(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head):rotBy(posLookAdjust) --]]
 
 end)
 
-PlayerLook = DataAnimator.new(function (self) -- init
+PlayerLook = Animator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
   
@@ -136,28 +85,11 @@ end)
 
 
 -- standing system --
-StandUp = DataAnimator.new(function (self) -- init
+StandUp = Animator.new(function (self) -- init
   self.standingness = SmoothVal.new(0, 0.2)
   self.tailAdjustness = SmoothVal.new(0,0.2)
 
   self.shouldStand = false
-
-  self.standingPose = PoseData.new()
-  self.standingPose:part(models.amphi.root.Amphi.Hips).rot:set(vec(65,0,0))
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Legs).rot:set(vec(-65,0,0))
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist).rot:set(vec(10,0,0))
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders).rot:set(vec(10,0,0))
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).rot:set(vec(-85,0,0))
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck).rot:set(vec(-10,0,0))
-  self.standingPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot:set(vec(-75,0,0))
-
-  self.tailAdjustPose = PoseData.new()
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips).rot:set(vec(-20,0,0))
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.TailBase).rot:set(vec(-25,0,0))
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.TailBase.TailTip).rot:set(vec(-25,0,0))
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Legs).rot:set(vec(20,0,0))
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).rot:set(vec(20,0,0))
-  self.tailAdjustPose:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head).rot:set(vec(20,0,0))
 
 end, function (self) -- tick
   if self:isStanding() then
@@ -218,7 +150,7 @@ StandUp.keybind.release = pings.standDown
 
 
 -- cam handler --
-Ducking = DataAnimator.new(function (self) -- init
+Ducking = Animator.new(function (self) -- init
   self.camPos = SmoothVal.new(vec(0,-0.5,0), 0.3)
   self.standingBodyRot = SmoothVal.new(0, 0.3)
   self.bounds = {}
@@ -302,7 +234,7 @@ end
 
 
 -- wagger --
-Wagger = DataAnimator.new(function (self) -- init
+Wagger = Animator.new(function (self) -- init
   self.isWagging = false
   self.tailYaw = Oscillator.new(2,0.1,120,0.2)
 end, function (self) -- tick
@@ -327,7 +259,7 @@ end
 
 
 -- sleep pose --
-Sleep = DataAnimator.new(function (self) -- init
+Sleep = Animator.new(function (self) -- init
   self.baseSleepPose = PoseData.new()
   self.baseSleepPose:part(models.amphi.root).rot:set(vec(90,0,180))
   self.baseSleepPose:part(models.amphi.root).pos = vec(0,6,10)
@@ -374,7 +306,7 @@ end)
 
 
 -- crouch adjusters --
-PlayerCrouch = DataAnimator.new(function (self) -- init
+PlayerCrouch = Animator.new(function (self) -- init
 end, function (self) -- tick
 end, function (self, delta, pose) -- render
   
@@ -382,7 +314,7 @@ end)
 
 
 
-AmphiCrouch = DataAnimator.new(function (self) -- init
+AmphiCrouch = Animator.new(function (self) -- init
   self.base = PoseData.new()
   self.base:part(models.amphi.root.Amphi.Hips.Legs).pos = vec(0,0,-4)
   self.base:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms).pos = vec(0,3.2,0)
@@ -402,7 +334,7 @@ end)
 
 
 -- ear handling --
-Ears = DataAnimator.new(function (self) -- init
+Ears = Animator.new(function (self) -- init
   self.earPoses = {
     idle = PoseData.new(),
     walk = PoseData.new(), -- no special anims for standing
