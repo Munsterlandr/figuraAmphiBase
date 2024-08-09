@@ -8,8 +8,8 @@ function Chainlink.new(part)
     local o = {}
     o.offsets = {}
     o.part = part
-    o.rot = SmoothQuat.new(Quaternion.byTaitBryan(part:getRot()))
-    o.chainRot = SmoothQuat.new(Quaternion.new(1,0,0,0))
+    o.rot = TickedQuat.new(Quaternion.byTaitBryan(part:getRot()))
+    o.chainRot = TickedQuat.new(Quaternion.new(1,0,0,0))
     o.pos = TickedVal.new(part:getPos())
     setmetatable(o,Chainlink)
     return o

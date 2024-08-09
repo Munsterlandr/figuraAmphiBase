@@ -168,16 +168,16 @@ end
 
 
 
-SmoothQuat = {__index = {}}
-function SmoothQuat.new(initVal)
+TickedQuat = {__index = {}}
+function TickedQuat.new(initVal)
     local o = {}
     o.oldQuat = initVal:copy()
     o.newQuat = initVal
-    setmetatable(o, SmoothQuat)
+    setmetatable(o, TickedQuat)
     return o
-end function SmoothQuat.__index:get(delta)
+end function TickedQuat.__index:get(delta)
     return Quaternions.slerp(self.oldQuat, self.newQuat, delta)
-end function SmoothQuat.__index:set(quat)
+end function TickedQuat.__index:set(quat)
     self.oldQuat = self.newQuat
     self.newQuat = quat
 end
@@ -185,7 +185,7 @@ end
 
 
 -- testing --
-local smoothQuat = SmoothQuat.new(Quaternion.new(1,0,0,0))
+local smoothQuat = TickedQuat.new(Quaternion.new(1,0,0,0))
 print(smoothQuat:get(0.5))
 smoothQuat:set(Quaternion.new(0,1,0,0))
 print(smoothQuat:get(0.5))
