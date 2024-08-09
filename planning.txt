@@ -1,27 +1,17 @@
+TODOs:
+1. Erase old system
+2. Code new system
+3. Redo basic posture
+4. 
+
+
 
 Quaternion Interpolation method:
 Because I'm interpolating between rotation quaternions, as long as the chosen method is consistent with how much it changes and preserves the vector's length, I should be fine. Problem is that i need it to work between two 4d points.
 
 
-
-The New System:
-    What I want for a new system:
-- lightweight
-- uses objects that index with the modelPart to store their data, hopefully making things more intuitive
-- still heavily based around code
-
-    What I'll do to achieve it:
-- Animators write onto pose like data objects
-- Possibly will have it really be just one that adds the value on?
-- might use blockbench animations for static poses, and to adjust the model back down
-
-    I'll need to unzip an older version for copying over the more static poses, because I just don't think I can deal with the old code crowding up the script.
-
-
-
-how to convert pyr vectors to quaternions:
-1. convert pyr to axis angle
-2. convert axis angle to versor
+What this chain object system is:
+    It should use object defined relations to do some basic IK chain stuff, based off of properties of the model.
 
 
 
