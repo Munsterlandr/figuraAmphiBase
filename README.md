@@ -8,13 +8,6 @@ If things are separated into multiple versions, it's probably because of changes
 
 Current model version: 1.1
 
-### Version 1.2
-* Completely rework the animation system to be more data based, which will also make the transformation sequence easier
-* Make code more readable and easier to edit (particularly for the transformation handler so that retracting added parts is straightforward)
-* Redo the animation system for the ears
-* Add ducking animation to match with camera perspective adjusting to prevent seeing through walls
-* Antennae sprites (may be pushed to 2.0 if I can't make room for em)
-
-### Version 2.0
-* Add a second pair of arms, which can be toggled on and off.
-* Expand the texture to accomodate for the new limbs.
+### Immediate plans
+* Make the bodyparts rotate around properly
+* fix default, example texture to actually line up with UVs

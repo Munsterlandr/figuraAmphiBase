@@ -10,37 +10,6 @@ local velocity
 
 -- Form PoseDatas --
 
-AmphiForm = PoseData.new()
-AmphiForm:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm).pos = vec(2,0,0)
-AmphiForm:part(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm).pos = vec(-2,0,0)
-
-HumanForm = PoseData.new() -- if you've added extra geometry please edit this to have it tuck it away!
-
-
--- goop syncer --
-Goop = DataAnimator.new(function (self) -- init
-  self.goopening = SmoothVal.new(0, 0.3)
-end, function (self) -- tick
-  self.goopening:advance()
-end, function (self, delta, pose) -- render
-  pose.parts[models.amphi.root.Goops] = pose:checkPart(models.amphi.root.Amphi)
-  pose.parts[models.amphi.root.Goops.Hips2] = pose:checkPart(models.amphi.root.Amphi.Hips)
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs)
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2.LeftLeg2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs.LeftLeg)
-  pose.parts[models.amphi.root.Goops.Hips2.Legs2.RightLeg2] = pose:checkPart(models.amphi.root.Amphi.Hips.Legs.RightLeg)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.LeftArm2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.LeftArm)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Arms2.RightArm2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Arms.RightArm)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck)
-  pose.parts[models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2] = pose:checkPart(models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head)
-
-  -- do the goopening (todo)
-end)
-
-
-
 -- transformation system --
 Tf = DataAnimator.new(function (self) -- init
   self.isTransforming = false
@@ -467,6 +436,9 @@ ActionPages.humanMainPage:newAction()
 function events.entity_init()
   models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head:setParentType("None")
   models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2:setParentType("None")
+
+  --animations.amphi.sleeping:setOverride(true)
+  animations.amphi.adjust:play()
 end
 
 -- tick event, called 20 times per second
@@ -475,6 +447,11 @@ function events.tick()
   velocity = player:getVelocity()
 
   if Tf.isAmphi then
+    if currentPose == "SLEEPING" then
+      animations.amphi.sleeping:setPlaying(true)
+    else
+      animations.amphi.sleeping:setPlaying(false)
+    end
     Wagger:tick()
     NeckPoser:tick()
     StandUp:tick()
@@ -492,21 +469,20 @@ end
 --"context" is a string that tells from where this render event was called (the paperdoll, gui, player render, first person)
 function events.render(delta, context)
   local finalPose = PoseData.new()
-  finalPose:part(models.amphi.root).pos = vec(0,-12,-13)
 
 
   -- apply the functions
   local amphiPose
   if Tf.isAmphi == true then
-    amphiPose = AmphiForm:copy()
-    AmphiCrouch:render(delta, amphiPose)
-    StandUp:render(delta, amphiPose)
-    NeckPoser:render(delta, amphiPose)
-    Ducking:render(delta, amphiPose)
-    AmphiLook:render(delta, amphiPose)
-    Sleep:render(delta, amphiPose)
-    Ears:render(delta, amphiPose)
-    Wagger:render(delta,amphiPose)
+    if currentPose ~= "SLEEPING" then
+      --AmphiCrouch:render(delta, amphiPose)
+      --StandUp:render(delta, amphiPose)
+      --NeckPoser:render(delta, amphiPose)
+      --Ducking:render(delta, amphiPose)
+      --AmphiLook:render(delta, amphiPose)
+      --Ears:render(delta, amphiPose)
+      --Wagger:render(delta,amphiPose)
+    end
   end
   local humanPose
   if Tf.isTransforming or not Tf.isAmphi then
@@ -514,10 +490,4 @@ function events.render(delta, context)
 
     PlayerLook:render(delta, humanPose)
   end
-
-
-  finalPose = Tf:render(delta, finalPose, amphiPose, humanPose)
-
-  -- apply finalPose to being
-  finalPose:apply(delta)
 end
