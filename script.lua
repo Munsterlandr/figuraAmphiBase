@@ -5,6 +5,7 @@ require "poseDataSystem"
 
 -- stray variables, for efficiency --
 local currentPose
+local prevPose
 local velocity 
 
 
@@ -437,7 +438,8 @@ function events.entity_init()
   models.amphi.root.Amphi.Hips.Waist.Shoulders.Neck.Head:setParentType("None")
   models.amphi.root.Goops.Hips2.Waist2.Shoulders2.Neck2.Head2:setParentType("None")
 
-  --animations.amphi.sleeping:setOverride(true)
+  animations.amphi.sleeping:setOverride(true)
+  animations.amphi.adjust:setOverride(true)
   animations.amphi.adjust:play()
 end
 
@@ -447,10 +449,25 @@ function events.tick()
   velocity = player:getVelocity()
 
   if Tf.isAmphi then
-    if currentPose == "SLEEPING" then
-      animations.amphi.sleeping:setPlaying(true)
-    else
-      animations.amphi.sleeping:setPlaying(false)
+    if currentPose ~= prevPose then
+      if currentPose == "SLEEPING" then
+        animations:stopAll()
+        animations.amphi.adjust:play()
+        animations.amphi.sleeping:play()
+      else
+        animations.amphi.sleeping:stop()
+        
+        -- handle ones where the body goes horizontal
+        if currentPose == "SWIMMING" or currentPose == "FALL_FLYING" then
+          animations.amphi.lie_down:play()
+        elseif prevPose == "SWIMMING" then
+          animations.amphi.get_up:setTime(0.55 - animations.amphi.lie_down:getTime())
+          animations.amphi.lie_down:stop()
+          animations.amphi.get_up:play()
+        else
+          animations.amphi.lie_down:stop()
+        end
+      end
     end
     Wagger:tick()
     NeckPoser:tick()
@@ -461,6 +478,7 @@ function events.tick()
   end
   Tf:tick()
 
+  prevPose = currentPose
 end
 
 -- render event, called every time your avatar is rendered

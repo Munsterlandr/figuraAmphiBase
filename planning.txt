@@ -6,6 +6,7 @@ if sleeping:
 else:
     if swimming or flying:
         (body rotate to account for it)
-    else: # here to make it do nothing when swimming or flying
-        
+    elif standing:
+        (do that)
+    (rotate everything using fancy math stuff)
     
